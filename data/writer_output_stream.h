@@ -9,10 +9,10 @@
 #include "../collections/list.h"
 #include "../collections/set.h"
 #include "../math/matrix.h"
-#include "output_stream.h"
+#include "../stream/impl/c_stream/output_c_stream.h"
 
 KNIIT_LIB_NAMESPACE {
-    KNIIT_LIB_CLASS WriterOutputStream : public OutputStream {
+    KNIIT_LIB_CLASS WriterOutputStream : public OutputCStream {
     public:
         WriterOutputStream(std::string fileName, bool append = false);
         WriterOutputStream(WriterOutputStream&& reader);

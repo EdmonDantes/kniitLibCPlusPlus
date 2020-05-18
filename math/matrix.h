@@ -114,7 +114,7 @@ KNIIT_LIB_NAMESPACE {
             if (index < values.size()) {
                 return values.get(index);
             }
-            return List<T>();
+            return std::move(List<T>());
         }
 
         List<T>& getColumn(uintmax index) {

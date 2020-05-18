@@ -5,9 +5,9 @@
 
 #ifndef KNIITLIBRARY_READER_INPUT_STREAM_H
 #define KNIITLIBRARY_READER_INPUT_STREAM_H
-
-#include "input_stream.h"
+#include "../data/stream/impl/c_stream/input_c_stream.h"
 #include "../core/number.h"
+#include "../core/string.h"
 #include "../core/datatypes.h"
 #include "../collections/list.h"
 #include "../collections/set.h"
@@ -19,7 +19,7 @@
 
 KNIIT_LIB_NAMESPACE {
 
-    KNIIT_LIB_CLASS ReaderInputStream : public InputStream {
+    KNIIT_LIB_CLASS ReaderInputStream : public InputCStream {
     protected:
         bool skip = false;
     public:
@@ -31,6 +31,7 @@ KNIIT_LIB_NAMESPACE {
         bool open(std::string& fileName);
 
         void setSkip(bool skip);
+
 
         /*
             Read boolean value from input in format (true/false) or (1/0).
@@ -129,7 +130,7 @@ KNIIT_LIB_NAMESPACE {
 
             If can`t read throw exception KNIIT_LIB_ERROR_CAN_NOT_READ
         */
-        List<Number> readUnicodeString(uintmax length = 0, bool utf8 = false, bool addEndChar = false, Number endChar = '\n', ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
+        String readUnicodeString(uintmax length = 0, bool utf8 = false, bool addEndChar = false, Number endChar = '\n', ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
 
         /*
             Read color value from input in format

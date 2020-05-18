@@ -15,28 +15,28 @@
 
 KNIIT_LIB_NAMESPACE {
 
-template <class T>
-KNIIT_LIB_CLASS List {
-private:
+    template <class T>
+    KNIIT_LIB_CLASS List {
+     private:
 
-    /**
-     * Return max value
-     *
-     * @param a
-     * @param b
-     * @return a > b ? a : b
-     */
-    uintmax max(uintmax a, uintmax b) {
-        return a > b ? a : b;
-    }
+        /**
+         * Return max value
+         *
+         * @param a
+         * @param b
+         * @return a > b ? a : b
+         */
+        uintmax max(uintmax a, uintmax b) {
+            return a > b ? a : b;
+        }
 
-    void move(T& a, T& b){
-        a = std::move(b);
-    }
-protected:
-        T* value = 0;
-        uintmax innerSize = -1;
-        uintmax capacity = -1;
+        void move(T& a, T& b) {
+            a = std::move(b);
+        }
+     protected:
+        T* value = nullptr;
+        uintmax _size = 0;
+        uintmax capacity = 0;
 
         /**
          * Init/reinit array for contain values. If reinit delete all values.
@@ -44,10 +44,10 @@ protected:
          * @param capacity - size of array.
          */
         void init(uintmax capacity) {
-            this->innerSize = 0;
+            this->_size = 0;
             this->capacity = capacity;
 
-            if (value != nullptr && value != 0) {
+            if (value != nullptr) {
                 delete[] value;
             }
 
@@ -62,13 +62,13 @@ protected:
          * @param newSize - new size of array.
          */
         void resize(uintmax newSize) {
-            if (value == nullptr || value == 0) {
+            if (value == nullptr) {
                 value = new T[newSize];
                 return;
             }
 
             T* tmp = new T[newSize];
-            for (uintmax i = 0; i < innerSize && i < newSize; i++) {
+            for (uintmax i = 0; i < _size && i < newSize; i++) {
                 move(tmp[i], value[i]);
             }
             delete[] value;
@@ -83,19 +83,20 @@ protected:
          * @return Does increase array size on additionalSize.
          */
         bool addSize(uintmax additionalSize) {
-            if (innerSize + additionalSize >= capacity) {
-                resize(capacity = (innerSize + max((innerSize * 2 / 3), additionalSize)));
+            if (_size + additionalSize >= capacity) {
+                resize(capacity = (_size + max((_size * 2 / 3), additionalSize)));
             }
-            innerSize += additionalSize;
+            _size += additionalSize;
             return true;
         }
-        public:
+
+     public:
 
         /**
          * Constructor with initialization array's length
          * @param capacity - initialization array's length
          */
-        explicit List(uintmax capacity) {
+        explicit List(const uintmax capacity) {
             init(capacity);
         };
 
@@ -103,33 +104,46 @@ protected:
          * Default constructor.
          * Default array's length = 16
          */
-        List() : List(16) {};
+        List() : List(16) {
+        };
+
+
+        /**
+         * Constructor from array
+         */
+        List(T* array, uintmax length, bool createNew = true) {
+            if (!createNew) {
+                value = array;
+                _size = capacity = length;
+            } else {
+                init(length + (length * 3 / 2));
+                memcpy(this->value, array, sizeof(*this->value) * length);
+                this->_size = length;
+            }
+        }
 
         /**
          * Copy constructor
          */
         List(const List<T>& list) : List(list.size() + (list.size() * 3 / 2)) {
             memcpy(this->value, list.value, sizeof(*this->value) * list.size());
-            this->innerSize = list.innerSize;
+            this->_size = list._size;
         }
 
         /**
          * Move constructor
          */
         List(List<T>&& list) {
-            memcpy(this, &list, sizeof(*this));
-            list.value = 0;
-            list.innerSize = 0;
-            list.capacity = 0;
+            operator=(std::move(list));
         }
 
         /**
          * Move operator
          */
-        List<T>& operator = (List<T>&& list) {
+        List<T>& operator=(List<T>&& list) {
             memcpy(this, &list, sizeof(*this));
-            list.value = 0;
-            list.innerSize = 0;
+            list.value = nullptr;
+            list._size = 0;
             list.capacity = 0;
             return *this;
         }
@@ -137,14 +151,14 @@ protected:
         /**
          * Copy operator
          */
-        List<T>& operator = (const List<T>& list) {
-            this->init(list.innerSize + (list.innerSize * 3 / 2));
+        List<T>& operator=(const List<T>& list) {
+            this->init(max(list._size + (list._size * 3 / 2), 16));
 
-            for (int i = 0; i < list.innerSize; i++) {
+            for (int i = 0; i < list._size; i++) {
                 this->value[i] = list.value[i];
             }
 
-            this->innerSize = list.innerSize;
+            this->_size = list._size;
 
             return *this;
         }
@@ -153,12 +167,12 @@ protected:
          * Destructor.
          */
         ~List() {
-            if (value != nullptr && value != 0) {
+            if (value != nullptr) {
                 delete[] value;
             }
 
-            this->value = 0;
-            this->innerSize = 0;
+            this->value = nullptr;
+            this->_size = 0;
             this->capacity = 0;
         }
 
@@ -169,23 +183,73 @@ protected:
          */
         void add(const T& value) {
             if (addSize(1)) {
-                move(this->value[innerSize - 1], const_cast<T&>(value));
+                move(this->value[_size - 1], const_cast<T&>(value));
             } else {
                 throw createException2("ArrayList", "Can not add value");
             }
         }
 
         /**
-         * Add all values for list to current list.
+         * Add new value to the list in special place with special index
+         * @param value
+         * @param index
+         */
+        void add(const T& value, int index) {
+            if (index <= size()) {
+                if (addSize(1)) {
+                    for (uintmax i = size() - 1; i > index; i--) {
+                        this->value[i] = this->value[i - 1];
+                    }
+
+                    move(this->value[index], const_cast<T&>(value));
+                } else {
+                    throw createException2("ArrayList", "Can not add value");
+                }
+            } else {
+                throw createException2("ArrayList", "Wrong index")
+            }
+        }
+
+        /**
+         * Replace value in list in place with index
+         * @param value
+         * @param index
+         */
+        void set(const T& value, int index) {
+            if (index < size()) {
+                move(this->value[index], const_cast<T&>(value));
+            } else if (index == size()) {
+                this->add(value);
+            } else {
+                throw createException2("ArrayList", "Wrong index");
+            }
+        }
+
+        /**
+         * Add all values from list to current list.
          *
          * @param list - list with values
          */
-        void addAll(List<T>& list) {
-            uintmax newSize = max(this->capacity, innerSize + list.innerSize);
+        void addAll(const List<T>& list) {
+            uintmax newSize = max(this->capacity, _size + list._size);
             resize(newSize);
 
-            for (uintmax i = 0; i < list.innerSize; i++) {
+            for (uintmax i = 0; i < list._size; i++) {
                 add(list.value[i]);
+            }
+        }
+
+        /**
+         * Add all values from array to current list
+         * @param array array with values
+         * @param length count values in array
+         */
+        void addAll(const T* array, uintmax length) {
+            uintmax newSize = max(this->capacity, _size + length);
+            resize(newSize);
+
+            for (uintmax i = 0; i < length; i++) {
+                add(array[i]);
             }
         }
 
@@ -196,11 +260,11 @@ protected:
          * @return Does remove value from this index. If list doesn't have this index, it will return false.
          */
         bool remove(uintmax index) {
-            if (index < innerSize) {
-                for (uintmax i = index; i < innerSize - 1; i++) {
+            if (index < _size) {
+                for (uintmax i = index; i < _size - 1; i++) {
                     value[index] = value[index + 1];
                 }
-                innerSize--;
+                _size--;
                 return true;
             }
             return false;
@@ -214,7 +278,7 @@ protected:
          * @return Does remove all values
          */
         bool clear() {
-            innerSize = 0;
+            _size = 0;
             return true;
         }
 
@@ -224,8 +288,8 @@ protected:
          * @return Does remove unused array's cells in memory
          */
         bool cut() {
-            if (innerSize < capacity) {
-                resize(innerSize);
+            if (_size < capacity) {
+                resize(_size);
                 return true;
             }
             return false;
@@ -237,9 +301,9 @@ protected:
          * @return new list with changed direction
          */
         List<T>& reverse() const {
-            List<T> result(innerSize);
-            for (uintmax i = 0; i < innerSize; i++) {
-                result.value[i] = value[innerSize - i - 1];
+            List<T> result(_size);
+            for (uintmax i = 0; i < _size; i++) {
+                result.value[i] = value[_size - i - 1];
             }
             return result;
         }
@@ -251,17 +315,37 @@ protected:
          * @return value
          */
         T& get(uintmax index) {
-            if (index < innerSize) {
+            if (index < _size) {
                 return value[index];
+            } else {
+                throw createException2("List", "Wrong index");
             }
-            throw "Wrong index";
         }
 
         /**
          * @return count values in list
          */
         uintmax size() const {
-            return innerSize;
+            return _size;
+        }
+
+        /**
+         * Change size of this list
+         * @param size New list's size
+         * @param removeData If true, can remove some data
+         * @return True, if list was changed size.
+         */
+        bool setSize(uintmax size, bool removeData = false) {
+            if (size < _size) {
+                if (removeData) {
+                    _size = size;
+                    return true;
+                } else {
+                    return false;
+                };
+            } else {
+                return addSize(_size - size);
+            }
         }
 
         /**
@@ -272,12 +356,25 @@ protected:
         }
 
         /**
+         * @return Array, if it possible, else return nullptr
+         */
+        T* toArray() const {
+            if (this->value == nullptr) {
+                return nullptr;
+            }
+
+            T* array = new T[size()];
+            memcpy(array, this->value, size() * sizeof(T));
+            return array;
+        }
+
+        /**
          * Add value to list
          *
          * @param value
          * @return this list
          */
-        List<T>& operator<< (const T& value) {
+        List<T>& operator<<(const T& value) {
             add(value);
             return *this;
         }
@@ -288,14 +385,14 @@ protected:
          * @param index - value's index
          * @return value
          */
-        const T& operator[] (uintmax index) const {
-            if (index < innerSize) {
+        const T& operator[](uintmax index) const {
+            if (index < _size) {
                 return value[index];
+            } else {
+                throw createException2("List", "Wrong index");
             }
-            throw "Wrong index";
         }
-};
-
+    };
 
 }
 

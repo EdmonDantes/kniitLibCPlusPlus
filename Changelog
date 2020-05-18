@@ -1,0 +1,13 @@
+Version 0.2:
+    Fix:
+        Support all unicode formats (UTF-8, UTF-16, UTF-32 with different byte order)
+        Comparator method modificator was private, now public.
+    Add:
+        String class
+        Codec interface
+        Status class
+        Stream interfaces and implementations
+        Some WinForms functions
+        List:
+            Constructor from array
+            Methods addAll, toArray, add(value, index), set

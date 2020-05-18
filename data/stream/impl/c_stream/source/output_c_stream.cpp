@@ -1,22 +1,37 @@
 //
 // Created by masa_ on 28.04.2020.
 //
-#include "../output_stream.h"
+#include "../output_c_stream.h"
 
 KNIIT_LIB_NAMESPACE {
-    OutputStream::OutputStream() {
+    OutputCStream::OutputCStream() {
         stream = nullptr;
     }
 
-    OutputStream::OutputStream(std::ostream* stream) {
+    OutputCStream::OutputCStream(OutputCStream&& stream) {
+        operator=(std::move(stream));
+    }
+
+    OutputCStream::OutputCStream(std::ostream* stream) {
         open(stream);
     }
 
-    OutputStream::~OutputStream() {
+    OutputCStream& OutputCStream::operator=(OutputCStream&& stream) {
+        if (this->stream != nullptr) {
+            delete this->stream;
+        }
+
+        this->stream = stream.stream;
+        stream.stream = nullptr;
+        return *this;
+    }
+
+    OutputCStream::~OutputCStream() {
         close();
     }
 
-    bool OutputStream::open(std::ostream *stream) {
+    bool OutputCStream::open(std::ostream* stream) {
+        close();
         if (stream != nullptr && stream->good()) {
             this->stream = stream;
             return true;
@@ -24,7 +39,7 @@ KNIIT_LIB_NAMESPACE {
         return false;
     }
 
-    void OutputStream::close() {
+    void OutputCStream::close() {
         if (isOpen()) {
             stream->flush();
             delete stream;
@@ -32,27 +47,27 @@ KNIIT_LIB_NAMESPACE {
         stream = nullptr;
     }
 
-    bool OutputStream::isOpen() {
+    bool OutputCStream::isOpen() const {
         return stream != nullptr;
     }
 
-    bool OutputStream::isClose() {
+    bool OutputCStream::isClose() const {
         return !isOpen();
     }
 
-    bool OutputStream::canWrite() {
+    bool OutputCStream::canWrite() const {
         return isOpen() && stream->good();
     }
 
-    uintmax OutputStream::position() {
+    uintmax OutputCStream::position() const {
         return stream->tellp();
     }
 
-    void OutputStream::position(uintmax position) {
+    void OutputCStream::position(uintmax position) {
         stream->seekp(position);
     }
 
-    bool OutputStream::write(uint8_t byte) {
+    bool OutputCStream::write(uint8_t& byte) {
         if (canWrite()) {
             if (stream->opfx()) {
                 stream->put(byte);
@@ -64,7 +79,8 @@ KNIIT_LIB_NAMESPACE {
         return false;
     }
 
-    bool OutputStream::write(uint8_t byte, uintmax position) {
+
+    bool OutputCStream::write(uint8_t& byte, uintmax position) {
         if (canWrite()) {
             uintmax prevPosition = this->position();
 
@@ -83,10 +99,10 @@ KNIIT_LIB_NAMESPACE {
         return false;
     }
 
-    bool OutputStream::write(uint8_t *bytes, uintmax length, ByteOrder byteOrder) {
+    bool OutputCStream::write(uint8_t* bytes, uintmax length) {
         uintmax prevPosition = this->position();
         for (uintmax i = 0; i < length; i++) {
-            if (!write(bytes[byteOrder == LITTLE_ENDIAN ? length - i - 1 : i])) {
+            if (!write(bytes[i])) {
                 this->position(prevPosition);
                 return false;
             }
@@ -95,17 +111,7 @@ KNIIT_LIB_NAMESPACE {
         return true;
     }
 
-    OutputStream::OutputStream(OutputStream&& stream) {
-        operator=(std::move(stream));
-    }
-
-    OutputStream &OutputStream::operator=(OutputStream&& stream) {
-        if (this->stream != nullptr) {
-            delete this->stream;
-        }
-
-        this->stream = stream.stream;
-        stream.stream = nullptr;
-        return *this;
+    bool OutputCStream::write(uint8_t* obj, uintmax length, uintmax position) {
+        return false;
     }
 };

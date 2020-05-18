@@ -5,7 +5,6 @@
 
 #include <fstream>
 #include "../writer_output_stream.h"
-#include "../../collections/list.h"
 
 KNIIT_LIB_NAMESPACE {
     WriterOutputStream::WriterOutputStream(std::string fileName, bool append) {
@@ -18,7 +17,7 @@ KNIIT_LIB_NAMESPACE {
 
     bool WriterOutputStream::open(std::string& fileName, bool append) {
         auto* stream = append ? new std::ofstream(fileName, std::fstream::app) : new std::ofstream(fileName);
-        if (stream->is_open() && OutputStream::open(stream)) {
+        if (stream->is_open() && OutputCStream::open(stream)) {
             return true;
         } else {
             delete stream;
@@ -44,7 +43,8 @@ KNIIT_LIB_NAMESPACE {
     }
 
     bool WriterOutputStream::writeASCIIChar(char ch) {
-        return write(ch);
+        uint8_t tmp = ch;
+        return write(tmp);
     }
 
     bool WriterOutputStream::writeUnicodeChar(Number ch, bool utf8, ByteOrder byteOrder) {
@@ -266,6 +266,7 @@ KNIIT_LIB_NAMESPACE {
             number -= tmp;
             index++;
         }
+        return true;
     }
 
     bool WriterOutputStream::writeString(List<Number>& str, bool unicode, bool utf8, ByteOrder byteOrder) {
@@ -396,6 +397,7 @@ KNIIT_LIB_NAMESPACE {
             position(startPosition);
             return false;
         }
+        return true;
     }
 
     bool WriterOutputStream::writeMatrix(MutableMatrix<Number> &matrix, uint8_t maxCharAfterPoint, bool unicode, bool utf8, ByteOrder byteOrder) {

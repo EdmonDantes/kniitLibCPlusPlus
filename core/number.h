@@ -13,8 +13,10 @@
 
 #ifndef KNIITLIBRARY_NUMBER_H
 #define KNIITLIBRARY_NUMBER_H
+
 #include "core.h"
 #include "comparator.h"
+#include "status.h"
 
 KNIIT_LIB_NAMESPACE {
 
@@ -36,11 +38,11 @@ KNIIT_LIB_NAMESPACE {
             Signed bit all be 1 if used decimal value
         */
         uint8_t status;
-#ifdef KNIIT_LIB_USE_X64
+        #ifdef KNIIT_LIB_USE_X64
         typedef uintmax_t number_t;
-#else
+        #else
         typedef double number_t;
-#endif
+        #endif
 
         number_t number = 0;
 
@@ -56,16 +58,16 @@ KNIIT_LIB_NAMESPACE {
         static const uint8_t IS_UINT8 = IS_USE_8_BIT;
         static const uint8_t IS_UINT16 = IS_USE_16_BIT;
         static const uint8_t IS_UINT32 = IS_USE_32_BIT;
-#ifdef KNIIT_LIB_USE_X64
+        #ifdef KNIIT_LIB_USE_X64
         static const uint8_t IS_UINT64 = IS_USE_64_BIT;
-#endif
+        #endif
 
         static const uint8_t IS_INT8 = IS_USE_8_BIT | IS_SIGNED_VALUE;
         static const uint8_t IS_INT16 = IS_USE_16_BIT | IS_SIGNED_VALUE;
         static const uint8_t IS_INT32 = IS_USE_32_BIT | IS_SIGNED_VALUE;
-#ifdef KNIIT_LIB_USE_X64
+        #ifdef KNIIT_LIB_USE_X64
         static const uint8_t IS_INT64 = IS_USE_64_BIT | IS_SIGNED_VALUE;
-#endif
+        #endif
 
         static const uint8_t IS_FLOAT = IS_USE_32_BIT | IS_SIGNED_VALUE | 64;
         static const uint8_t IS_DOUBLE = IS_USE_64_BIT | IS_SIGNED_VALUE | 128;
@@ -76,17 +78,17 @@ KNIIT_LIB_NAMESPACE {
                 IS_UINT8
                 | IS_UINT16
                 | IS_UINT32
-#ifdef KNIIT_LIB_USE_X64
+        #ifdef KNIIT_LIB_USE_X64
         | IS_UINT64
-#endif
+        #endif
         ;
         static const uint8_t IS_INT =
                 IS_INT8
                 | IS_INT16
                 | IS_INT32
-#ifdef KNIIT_LIB_USE_X64
+        #ifdef KNIIT_LIB_USE_X64
         | IS_INT64
-#endif
+        #endif
         ;
 
 
@@ -163,43 +165,44 @@ KNIIT_LIB_NAMESPACE {
 
         uint8_t* getBytes();
 
-        Number operator +(const Number& value);
-        Number operator -(const Number& value);
-        Number operator *(const Number& value);
-        Number operator /(const Number& value);
-        Number& operator =(const Number& value);
+        Number operator+(const Number& value);
+        Number operator-(const Number& value);
+        Number operator*(const Number& value);
+        Number operator/(const Number& value);
+        Number& operator=(const Number& value);
 
-        Number& operator +=(const Number& value);
-        Number& operator -=(const Number& value);
-        Number& operator *=(const Number& value);
-        Number& operator /=(const Number& value);
+        Number& operator+=(const Number& value);
+        Number& operator-=(const Number& value);
+        Number& operator*=(const Number& value);
+        Number& operator/=(const Number& value);
 
-        bool operator > (const Number& value) const;
-        bool operator < (const Number& value) const;
-        bool operator >= (const Number& value) const;
-        bool operator <= (const Number& value) const;
-        bool operator ==(const Number& value) const;
-        bool operator !=(const Number& value) const;
+        bool operator>(const Number& value) const;
+        bool operator<(const Number& value) const;
+        bool operator>=(const Number& value) const;
+        bool operator<=(const Number& value) const;
+        bool operator==(const Number& value) const;
+        bool operator!=(const Number& value) const;
 
-        Number operator &(const Number& value);
-        Number operator |(const Number& value);
-        Number operator <<(const Number& value);
-        Number operator >>(const Number& value);
+        Number operator&(const Number& value);
+        Number operator|(const Number& value);
+        Number operator<<(const Number& value);
+        Number operator>>(const Number& value);
 
-        Number operator -();
+        Number operator-();
 
-#ifdef KNIIT_LIB_USE_X64
+        #ifdef KNIIT_LIB_USE_X64
         Number(int64_t number, bool isFixed = false);
-		Number(uint64_t number, bool isFixed = false);
+        Number(uint64_t number, bool isFixed = false);
 
-		bool isInt64() const;
-		bool isUInt64() const;
-		int64_t getInt64() const;
-		uint64_t getUInt64() const;
-#endif // KNIIT_LIB_USE_X64
+        bool isInt64() const;
+        bool isUInt64() const;
+        int64_t getInt64() const;
+        uint64_t getUInt64() const;
+        #endif // KNIIT_LIB_USE_X64
     };
 
-    KNIIT_LIB_CLASS NumberComparator : public Comparator<Number>{
+    KNIIT_LIB_CLASS NumberComparator : public Comparator<Number> {
+    public:
         int compare(const Number& a, const Number& b) const override;
     };
 }

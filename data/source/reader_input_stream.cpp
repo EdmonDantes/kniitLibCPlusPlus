@@ -19,7 +19,7 @@ KNIIT_LIB_NAMESPACE {
 
     bool ReaderInputStream::open(std::string& fileName) {
         auto* stream = new std::ifstream(fileName);
-        if (stream->is_open() && InputStream::open(stream)) {
+        if (stream->is_open() && InputCStream::open(stream)) {
             return true;
         } else {
             delete stream;
@@ -306,21 +306,20 @@ KNIIT_LIB_NAMESPACE {
         return result;
     }
 
-    List<Number> ReaderInputStream::readUnicodeString(uintmax length, bool utf8, bool addEndChar, Number endChar, ByteOrder byteOrder) {
+    String ReaderInputStream::readUnicodeString(uintmax length, bool utf8, bool addEndChar, Number endChar, ByteOrder byteOrder) {
         uintmax startPosition = position();
-
-        List<Number> result(length < 1 ? 16 : length);
+        String result;
 
         for (uintmax i = 0; (length < 1 || i < length) && canRead(); i++) {
             Number ch = readUnicodeChar(utf8, byteOrder);
 
             if (ch == endChar) {
                 if (addEndChar) {
-                    result << ch;
+                    result += ch;
                 }
                 break;
             } else {
-                result << ch;
+                result += ch;
             }
         }
 
@@ -772,7 +771,7 @@ KNIIT_LIB_NAMESPACE {
         this->stream = 0;
     }
 
-    ReaderInputStream::ReaderInputStream(ReaderInputStream &&reader) : InputStream(std::move(reader)){
+    ReaderInputStream::ReaderInputStream(ReaderInputStream &&reader) : InputCStream(std::move(reader)){
         operator=(std::move(reader));
     }
 
