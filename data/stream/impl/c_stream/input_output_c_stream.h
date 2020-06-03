@@ -57,6 +57,7 @@ KNIIT_LIB_NAMESPACE {
         void read(uint8_t* pointer, uintmax length, uintmax position) override;
 
         bool canWrite() const override;
+        bool flush() override;
         bool write(uint8_t& obj) override;
         bool write(uint8_t& obj, uintmax position) override;
         bool write(uint8_t* obj, uintmax length) override;

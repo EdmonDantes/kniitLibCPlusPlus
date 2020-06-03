@@ -83,7 +83,7 @@ KNIIT_LIB_NAMESPACE {
          * @return Does increase array size on additionalSize.
          */
         bool addSize(uintmax additionalSize) {
-            if (_size + additionalSize >= capacity) {
+            if (_size + additionalSize > capacity) {
                 resize(capacity = (_size + max((_size * 2 / 3), additionalSize)));
             }
             _size += additionalSize;

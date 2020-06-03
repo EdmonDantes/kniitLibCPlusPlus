@@ -120,6 +120,8 @@ KNIIT_LIB_NAMESPACE {
 		return isOpen();
 	}
 
+
+
 	bool InputOutputCStream::write(uint8_t& obj) {
 		if (canWrite()) {
 			if (stream->opfx()) {
@@ -163,5 +165,10 @@ KNIIT_LIB_NAMESPACE {
 
 		return result;
 	}
+
+    bool InputOutputCStream::flush() {
+	    stream->flush();
+        return true;
+    }
 
 };

@@ -7,6 +7,21 @@
 KNIIT_LIB_NAMESPACE {
     namespace Codecs {
 
+        List<uint8_t> CodecASCII::encodeOne(Number ch, ByteOrder byteOrder) const {
+            List<uint8_t> result(1);
+            result.add(ch.getUInt8());
+
+            return std::move(result);
+        }
+
+        Number CodecASCII::decodeOne(InputStream<uint8_t>* in, ByteOrder byteOrder) const {
+            if (!in->canRead()) {
+                throw createException2("CodecASCII", "Can not read input stream");
+            }
+
+            return in->read();
+        }
+
         List<uint8_t> CodecUTF8::encodeOne(Number ch, ByteOrder byteOrder) const {
             List<uint8_t> result(4);
 
@@ -51,33 +66,33 @@ KNIIT_LIB_NAMESPACE {
 
             while (in->canRead()) {
                 if (index > 4) {
-                    throw createException2("String", "Wrong UTF-8 format");
+                    throw createException2("CodecUTF8", "Wrong UTF-8 format");
                 }
 
                 uint8_t byte = in->read();
                 if ((byte & 0x7F) == byte) {
                     if (!status.isEmpty() || index > 0) {
-                        throw createException2("String", "Wrong UTF-8 format");
+                        throw createException2("CodecUTF8", "Wrong UTF-8 format");
                     }
 
                     return byte;
                 } else if ((byte & 0xE0) == 0xC0) {
                     if (!status.isEmpty() || index > 1) {
-                        throw createException2("String", "Wrong UTF-8 format");
+                        throw createException2("CodecUTF8", "Wrong UTF-8 format");
                     }
 
                     status.add(1);
                     tmp[index++] = byte;
                 } else if ((byte & 0xF0) == 0xE0) {
                     if (!status.isEmpty() || index > 2) {
-                        throw createException2("String", "Wrong UTF-8 format");
+                        throw createException2("CodecUTF8", "Wrong UTF-8 format");
                     }
 
                     status.add(2);
                     tmp[index++] = byte;
                 } else if ((byte & 0xF8) == 0xF0) {
                     if (!status.isEmpty() || index > 3) {
-                        throw createException2("String", "Wrong UTF-8 format");
+                        throw createException2("CodecUTF8", "Wrong UTF-8 format");
                     }
 
                     status.add(3);
@@ -135,12 +150,12 @@ KNIIT_LIB_NAMESPACE {
                             }
                             return ch;
                         } else {
-                            throw createException2("String", "Wrong UTF-8 format");
+                            throw createException2("CodecUTF8", "Wrong UTF-8 format");
                         }
                 }
             }
 
-            throw createException2("String", "Can not read");
+            throw createException2("CodecUTF8", "Can not read input stream");
         }
 
         List<uint8_t> CodecUTF16::encodeOne(Number ch, ByteOrder byteOrder) const {
@@ -168,16 +183,16 @@ KNIIT_LIB_NAMESPACE {
                 tmp << 10;
                 uint16_t secondWord = (((uintmax) in->read()) << 8 | in->read());
                 if (secondWord < 0xDC00 || secondWord > 0xDFFF) {
-                    throw createException2("Codec UTF-16", "Wrong UTF-16 format");
+                    throw createException2("CodecUTF16", "Wrong UTF-16 format");
                 }
                 tmp += secondWord - 0xDC00;
                 return tmp;
             } else if (tmp >= 0xDC00 && tmp <= 0xDFFF) {
                 uintmax firstWord = (((uintmax) in->read()) << 8 | in->read());
                 if (firstWord < 0xD800 || firstWord > 0xDBFF) {
-                    throw createException2("Codec UTF-16", "Wrong UTF-16 format");
+                    throw createException2("CodecUTF16", "Wrong UTF-16 format");
                 }
-                firstWord << 10;
+                firstWord = firstWord << 10;
                 tmp += firstWord;
                 return tmp;
             } else {
@@ -219,6 +234,28 @@ KNIIT_LIB_NAMESPACE {
 
             return tmp;
         }
+
+        KNIIT_LIB_DLL_EXPORT const Codec* _ASCII = new CodecASCII();
+        KNIIT_LIB_DLL_EXPORT const Codec* _UTF8 = new CodecUTF8();
+        KNIIT_LIB_DLL_EXPORT const Codec* _UTF16 = new CodecUTF16();
+        KNIIT_LIB_DLL_EXPORT const Codec* _UTF32 = new CodecUTF32();
+
+        const Codec* ASCII() {
+            return _ASCII;
+        };
+
+        const Codec* UTF8()  {
+            return _UTF8;
+        }
+
+        const Codec* UTF16()  {
+            return _UTF16;
+        }
+
+        const Codec* UTF32()  {
+            return _UTF32;
+        }
+
     }
 };
 

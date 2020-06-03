@@ -82,6 +82,10 @@ KNIIT_LIB_NAMESPACE {
             return isOpen();
         }
 
+        bool flush() override {
+            return true;
+        }
+
         bool write(T& obj) override {
             if (!canWrite()) {
                 return false;

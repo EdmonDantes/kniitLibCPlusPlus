@@ -18,6 +18,7 @@ KNIIT_LIB_NAMESPACE {
     KNIIT_LIB_CLASS InputCStream : public InputStream<uint8_t> {
     protected:
         std::istream* stream = nullptr;
+        bool needToRemove = false;
     public:
         /**
          * Default constructor.
@@ -32,7 +33,7 @@ KNIIT_LIB_NAMESPACE {
         /**
          *  Create InputStream from std::istream
          */
-        InputCStream(std::istream* stream);
+        InputCStream(std::istream* stream, bool needToRemove = false);
 
         ~InputCStream();
 

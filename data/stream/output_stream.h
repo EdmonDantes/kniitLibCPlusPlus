@@ -19,6 +19,11 @@ KNIIT_LIB_NAMESPACE {
         virtual bool canWrite() const NO_BODY;
 
         /**
+         * @return True, if all data writed to stream
+         */
+        virtual bool flush() NO_BODY;
+
+        /**
          * Write object to this stream
          * @param obj
          * @return True, if object was written to this stream

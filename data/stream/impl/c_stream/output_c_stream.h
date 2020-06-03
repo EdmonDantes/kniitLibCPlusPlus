@@ -18,10 +18,11 @@ KNIIT_LIB_NAMESPACE {
     KNIIT_LIB_CLASS OutputCStream : public OutputStream<uint8_t> {
     protected:
         std::ostream* stream = nullptr;
+        bool needToRemove = false;
     public:
         OutputCStream();
         OutputCStream(OutputCStream&& stream);
-        OutputCStream(std::ostream* stream);
+        OutputCStream(std::ostream* stream, bool needToRemove = false);
         OutputCStream& operator=(OutputCStream&& stream);
 
         ~OutputCStream();
@@ -37,6 +38,7 @@ KNIIT_LIB_NAMESPACE {
         uintmax position() const override;
         void position(uintmax position) override;
 
+        bool flush() override;
         bool write(uint8_t& obj) override;
         bool write(uint8_t& obj, uintmax position) override;
         bool write(uint8_t* obj, uintmax length) override;

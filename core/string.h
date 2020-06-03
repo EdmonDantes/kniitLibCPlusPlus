@@ -82,6 +82,9 @@ KNIIT_LIB_NAMESPACE {
         bool operator==(const std::wstring& wstr) const;
 
         Number& operator[](uintmax index);
+
+        String toLower();
+        String toUpper();
     };
 
     KNIIT_LIB_CLASS StringComparator : public Comparator<String> {

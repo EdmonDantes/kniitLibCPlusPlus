@@ -1,3 +1,14 @@
+Version 0.2.1:
+    Fix:
+        Deleting C stream in InputCStream and OutputCStream.
+    Edit:
+        Edit ReaderInputStream and WriterInputStream (change all classes)
+    Add:
+        Add special argument for InputCStream and OutputCStream which will control deleting inner stream (Default: false. It mean, inner stream will not deleted).
+        toLower and toUpper to String class
+
+
+
 Version 0.2:
     Fix:
         Support all unicode formats (UTF-8, UTF-16, UTF-32 with different byte order)

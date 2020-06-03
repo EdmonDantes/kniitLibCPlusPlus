@@ -28,15 +28,21 @@ KNIIT_LIB_NAMESPACE {
             init(list, needToRemove);
         }
 
-        InputOutputListStream() : InputOutputStream<T>(new List<T>()) {
-        }
+        InputOutputListStream() : InputOutputStream<T>(new List<T>()) {}
 
         InputOutputListStream(InputOutputListStream&& stream) {
-
+            operator=(std::move(stream));
         }
 
         ~InputOutputListStream() {
+            close();
+        }
 
+        InputOutputListStream& operator=(InputOutputListStream&& stream) {
+            init(stream.list, stream.needToRemove);
+            stream.list = nullptr;
+            stream.index = 0;
+            stream.needToRemove = false;
         }
 
         bool isOpen() const override {
@@ -114,6 +120,10 @@ KNIIT_LIB_NAMESPACE {
             this->position(position);
             read(pointer, length);
             this->position(startPosition);
+        }
+
+        bool flush() override {
+            return true;
         }
 
         bool write(T& obj) override {

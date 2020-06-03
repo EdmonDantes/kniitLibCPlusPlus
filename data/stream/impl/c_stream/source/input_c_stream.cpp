@@ -4,10 +4,12 @@
  */
 #include "../input_c_stream.h"
 #include "../../../../../core/exception.h"
+#include <iostream>
 
 KNIIT_LIB_NAMESPACE {
-    InputCStream::InputCStream(std::istream * stream) {
+    InputCStream::InputCStream(std::istream * stream, bool needToRemove) {
         open(stream);
+        this->needToRemove = needToRemove;
     }
 
     InputCStream::~InputCStream() {
@@ -25,7 +27,7 @@ KNIIT_LIB_NAMESPACE {
     }
 
     void InputCStream::close() {
-        if (isOpen()) {
+        if (isOpen() && needToRemove) {
             delete stream;
         }
         stream = nullptr;

@@ -12,8 +12,9 @@ KNIIT_LIB_NAMESPACE {
         operator=(std::move(stream));
     }
 
-    OutputCStream::OutputCStream(std::ostream* stream) {
+    OutputCStream::OutputCStream(std::ostream* stream, bool needToRemove) {
         open(stream);
+        this->needToRemove = needToRemove;
     }
 
     OutputCStream& OutputCStream::operator=(OutputCStream&& stream) {
@@ -40,8 +41,8 @@ KNIIT_LIB_NAMESPACE {
     }
 
     void OutputCStream::close() {
-        if (isOpen()) {
-            stream->flush();
+        if (isOpen() && needToRemove) {
+            //stream->flush();
             delete stream;
         }
         stream = nullptr;
@@ -113,5 +114,10 @@ KNIIT_LIB_NAMESPACE {
 
     bool OutputCStream::write(uint8_t* obj, uintmax length, uintmax position) {
         return false;
+    }
+
+    bool OutputCStream::flush() {
+        stream->flush();
+        return true;
     }
 };
