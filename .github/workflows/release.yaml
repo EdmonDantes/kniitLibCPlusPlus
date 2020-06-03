@@ -16,3 +16,6 @@ jobs:
         github-api-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Use cmake
       run: cmake ./CMakeLists.txt
+    - name: Display the directory 
+      run: ls
+      shell: bash
