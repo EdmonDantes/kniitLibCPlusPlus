@@ -3,7 +3,12 @@ project(kniitLibrary)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE")
+if(DEFINED CMAKE_USE_LINUX)
+    add_definitions(-DKNIIT_LIB_DISABLE_AUTO_DETECT_OS -DKNIIT_LIB_USE_UNIX)
+else(DEFINED CMAKE_USE_LINUX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE")
+endif(DEFINED CMAKE_USE_LINUX)
+
 add_library(kniitLibrary SHARED
         src/main/core/core.h
         src/main/core/exception.h

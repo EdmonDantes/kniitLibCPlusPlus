@@ -9,7 +9,6 @@
 
 #ifndef KNIITLIBRARY_LIST_H
 #define KNIITLIBRARY_LIST_H
-#include <utility>
 #include "../core/core.h"
 #include "../core/exception.h"
 

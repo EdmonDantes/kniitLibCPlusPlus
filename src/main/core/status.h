@@ -22,11 +22,11 @@ KNIIT_LIB_NAMESPACE {
         };
 
         Status(Status& value) {
-            this->value = mask.value;
+            this->value = value.value;
         }
 
         Status& operator=(Status& value) {
-            this->value = mask.value;
+            this->value = value.value;
             return *this;
         }
 

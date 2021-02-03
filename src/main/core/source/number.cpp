@@ -129,7 +129,7 @@ KNIIT_LIB_NAMESPACE {
         return setStatus(isInteger, isSigned, size);
     }
 
-    void Number::init(uint8_t status, number_t number) {
+    void Number::init(uint8_t status, uint8_t* number) {
         this->status = status;
         set(number, isInteger(), isSigned(), 0);
     }
@@ -165,12 +165,11 @@ KNIIT_LIB_NAMESPACE {
     }
 
     Number::Number(const Number& number) {
-        init(number.status, number.number);
+        init(number.status, (uint8_t*)number.number);
     }
 
     Number::~Number() {
         this->status = 0;
-        this->number = 0;
     }
 
     bool Number::isSigned() const {
@@ -329,7 +328,7 @@ KNIIT_LIB_NAMESPACE {
     }
 
     Number& Number::operator=(const Number & value) {
-        number = value.number;
+        memcpy(number, value.number, 8);
         status = value.status;
         return *this;
     }

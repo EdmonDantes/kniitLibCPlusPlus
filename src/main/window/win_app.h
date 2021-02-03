@@ -29,7 +29,7 @@ KNIIT_LIB_NAMESPACE {
                 #ifdef _UNICODE
                     const Codec* codec = Codecs::UTF16();
                 #else
-                    const Codec* codec = Codecs::ACSII();
+                    const Codec* codec = Codecs::ASCII();
                 #endif
 
         OPENFILENAME ofn;

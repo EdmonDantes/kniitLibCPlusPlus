@@ -38,13 +38,7 @@ KNIIT_LIB_NAMESPACE {
             Signed bit all be 1 if used decimal value
         */
         uint8_t status;
-        #ifdef KNIIT_LIB_USE_X64
-        typedef uintmax_t number_t;
-        #else
-        typedef double number_t;
-        #endif
-
-        number_t number = 0;
+        uint8_t* number[8];
 
         static const uint8_t IS_FIXED_STATUS = 1;
 
@@ -108,7 +102,7 @@ KNIIT_LIB_NAMESPACE {
         template <typename T>
         bool set(T number, bool isInteger, bool isSigned, int innerSize);
 
-        void init(uint8_t status, number_t number);
+        void init(uint8_t status, uint8_t* number);
 
         template <typename T>
         Number(uint8_t status, T number);
