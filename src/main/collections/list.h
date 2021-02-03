@@ -304,7 +304,7 @@ KNIIT_LIB_NAMESPACE {
             for (uintmax i = 0; i < _size; i++) {
                 result.value[i] = value[_size - i - 1];
             }
-            return result;
+            return std::move(result);
         }
 
         /**

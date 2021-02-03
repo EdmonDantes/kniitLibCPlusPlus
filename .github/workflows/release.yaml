@@ -1,10 +1,8 @@
 name: Test
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+    tags:
+      - '*'
 jobs:
   build:
     runs-on: windows-latest
@@ -29,9 +27,19 @@ jobs:
       with:
         files: release/ README_FOR_IMPORT_VS2019.txt
         dest: 'release_build.zip'
+    - name: Get version
+      id: release_version
+      uses: AsasInnab/regex-action@v1
+      with:
+        regex_pattern: '[0-9]+.[0-9]+.[0-9]+'
+        regex_flags: 'gim'
+        search_string: ${{ github.ref }}
+    - name: Print version
+      echo: "Release version = ${{ steps.release_version.outputs.first_match }}"
     - name: Create release
       uses: ncipollo/release-action@v1
       with:
-        artifact: 'release_build.zip'
+        artifacts: 'release_build.zip'
         bodyFile: 'README.md'
+        tag: ${{ steps.release_version.outputs.first_match }}
         token: ${{ secrets.GITHUB_TOKEN }}
