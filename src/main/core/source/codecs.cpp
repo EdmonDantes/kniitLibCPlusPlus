@@ -164,13 +164,17 @@ KNIIT_LIB_NAMESPACE {
             int length = 0;
 
             if (ch < 0x10000) {
-                length = 1;
+                length = 2;
                 tmp[0] = ch.getUInt16();
             } else {
-                length = 2;
+                length = 4;
                 ch -= 0x10000;
                 tmp[0] = (ch.getUInt32() >> 10) + 0xD800;
                 tmp[1] = (ch.getUInt32() & 0x3FF) + 0xDC00;
+            }
+
+            for (int j = 0; j < length; j++) {
+                result.add(((uint8_t*)tmp)[byteOrder == BIG_ENDIAN ? j : length - 1 - j]);
             }
 
             return std::move(result);

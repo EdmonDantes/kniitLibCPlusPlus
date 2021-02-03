@@ -1,3 +1,18 @@
+Version 0.3.4
+    Fix:
+        Codec for UTF-16. Fix encode characters.
+        Method to in String encode zero value in codec and added result, if it needed.
+    Add:
+        Add two constructors in String class, for characters arrays with length
+        Add readNumber() method in ReaderInputStream
+
+Version 0.3
+    Fix:
+        Increasing size of List
+    Add:
+        Add ASCII codec
+        Add classes buffered streams
+
 Version 0.2.1:
     Fix:
         Deleting C stream in InputCStream and OutputCStream.

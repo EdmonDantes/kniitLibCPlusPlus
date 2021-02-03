@@ -17,11 +17,14 @@ KNIIT_LIB_NAMESPACE {
 
         void addChar(Number ch);
     public:
+
         String();
         String(const char& ch);
         String(const wchar_t& wch);
         String(const char* str);
         String(const wchar_t* wstr);
+        String(const char* str, uintmax size);
+        String(const wchar_t* str, uintmax size);
         String(const std::string& str);
         String(const std::wstring& wstr);
         String(List<uint8_t>& bytes, const Codec* codec, ByteOrder byteOrder = DEFAULT_BYTE_ORDER);

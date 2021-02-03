@@ -33,7 +33,7 @@ KNIIT_LIB_NAMESPACE {
         String readString(uintmax length = 0, Number lastChar = '\n', bool addLastChar = false);
 
         bool readBoolean();
-        Number readNumber();
+        Number readNumber(Number delimiter=' ');
         Number readColor();
         List<uint8_t> readHex();
         List<Number> readList();

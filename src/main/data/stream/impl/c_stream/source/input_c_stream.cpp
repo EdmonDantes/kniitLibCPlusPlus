@@ -2,9 +2,9 @@
  *    Copyright (c). 2020. Loginov Ilya Vladislavovich. All rights reserved.
  *    You must get permission for all action with this code or part of code from email dantes2104@gmail.com.
  */
-#include "../input_c_stream.h"
-#include "../../../../../core/exception.h"
 #include <iostream>
+#include "../../../../../core/exception.h"
+#include "../input_c_stream.h"
 
 KNIIT_LIB_NAMESPACE {
     InputCStream::InputCStream(std::istream * stream, bool needToRemove) {

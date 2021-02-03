@@ -20,7 +20,7 @@
 
 KNIIT_LIB_NAMESPACE {
 
-    KNIIT_LIB_CLASS Exception {
+    KNIIT_LIB_CLASS Exception : std::exception {
             private:
             intmax code;
             intmax line;

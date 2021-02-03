@@ -41,6 +41,18 @@ KNIIT_LIB_NAMESPACE {
         }
     }
 
+    String::String(const char* str, uintmax size) {
+        for (int i = 0; i < size; ++i) {
+            addChar(str[i]);
+        }
+    }
+
+    String::String(const wchar_t* str, uintmax size) {
+        for (int i = 0; i < size; ++i) {
+            addChar(str[i]);
+        }
+    }
+
     String::String(const std::string &str) : String(str.c_str()) {}
 
     String::String(const std::wstring &wstr) : String(wstr.c_str()) {}
@@ -148,7 +160,7 @@ KNIIT_LIB_NAMESPACE {
         InputListStream<Number> in(this->value, false);
         List<uint8_t> result = codec->encode(&in, byteOrder);
         if (addZeroToEnd) {
-            result.add(0);
+            result.addAll(codec->encodeOne(0, byteOrder));
         }
         return std::move(result);
     }
