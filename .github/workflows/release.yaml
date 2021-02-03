@@ -1,8 +1,8 @@
-name: Test
+name: Release
 on:
   push:
     tags:
-      - 'VERSION-[0-9]+.[0-9]+.[0-9]+'
+      - 'RELEASE-[0-9]+.[0-9]+.[0-9]+'
 jobs:
   build:
     runs-on: windows-latest
@@ -22,22 +22,28 @@ jobs:
     - name: Display the directory 
       run: ls ./release
       shell: bash
+    - name: Get version
+        id: release_version
+        uses: AsasInnab/regex-action@v1
+        with:
+          regex_pattern: '[0-9]+.[0-9]+.[0-9]+'
+          regex_flags: 'gim'
+          search_string: ${{ github.ref }}
+    - name: Save version
+      env:
+        version: ${{ steps.release_version.outputs.first_match }}
+    - name: Create artifact name
+      env:
+        artifact_name: 'kniit_lib_release_.${{ env.version }}zip'
     - name: Create archive
       uses: papeloto/action-zip@v1
       with:
         files: release/ README_FOR_IMPORT_VS2019.txt
-        dest: 'release_build.zip'
-    - name: Get version
-      id: release_version
-      uses: AsasInnab/regex-action@v1
-      with:
-        regex_pattern: '[0-9]+.[0-9]+.[0-9]+'
-        regex_flags: 'gim'
-        search_string: ${{ github.ref }}
+        dest: ${{ env.artifact_name }}
     - name: Create release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: 'release_build.zip'
+        artifacts: ${{ env.artifact_name }}
         bodyFile: 'README.md'
-        tag: ${{ steps.release_version.outputs.first_match }}
+        tag: ${{ env.version }}
         token: ${{ secrets.GITHUB_TOKEN }}

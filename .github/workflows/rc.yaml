@@ -1,0 +1,54 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'RC-[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Display the directory
+        run: ls
+        shell: bash
+      - name: Build with CMake
+        uses: ashutoshvarma/action-cmake-build@master
+        with:
+          configure-options: -DCMAKE_INSTALL_PATH=${{ github.workspace }}\release
+          install-build: true
+      - name: Display the directory
+        run: ls
+        shell: bash
+      - name: Display the directory
+        run: ls ./release
+        shell: bash
+      - name: Get version
+          id: release_version
+          uses: AsasInnab/regex-action@v1
+          with:
+            regex_pattern: '[0-9]+.[0-9]+.[0-9]+'
+            regex_flags: 'gim'
+            search_string: ${{ github.ref }}
+      - name: Generate build number
+          id: buildnumber
+          uses: einaregilsson/build-number@v3
+          with:
+            token: ${{secrets.github_token}}
+      - name: Save version
+        env:
+          version: "${{ steps.release_version.outputs.first_match }}.${{ steps.buildnumber.outputs.build_number }}"
+      - name: Create artifact name
+        env:
+          artifact_name: 'kniit_lib_rc_.${{ env.version }}zip'
+      - name: Create archive
+        uses: papeloto/action-zip@v1
+        with:
+          files: release/ README_FOR_IMPORT_VS2019.txt
+          dest: ${{ env.artifact_name }}
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ${{ env.artifact_name }}
+          bodyFile: 'README.md'
+          tag: ${{ env.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
