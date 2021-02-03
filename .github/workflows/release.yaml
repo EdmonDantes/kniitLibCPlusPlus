@@ -2,7 +2,7 @@ name: Test
 on:
   push:
     tags:
-      - '*'
+      - 'VERSION-[0-9]+.[0-9]+.[0-9]+'
 jobs:
   build:
     runs-on: windows-latest
