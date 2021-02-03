@@ -30,11 +30,11 @@ jobs:
         regex_flags: 'gim'
         search_string: ${{ github.ref }}
     - name: Save version
-      env:
-        version: ${{ steps.releaseversion.outputs.first_match }}
-    - name: Create artifact name
-      env:
-        artifact_name: 'kniit_lib_release_${{ env.version }}.zip'
+      run: echo "::set-env name=version::${{ steps.releaseversion.outputs.first_match }}"
+      shell: bash
+    - name: Save artifact name
+      run: echo "::set-env name=artifact_name::kniit_lib_release_${{ env.version }}.zip"
+      shell: bash
     - name: Create archive
       uses: papeloto/action-zip@v1
       with:

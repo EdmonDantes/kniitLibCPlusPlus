@@ -27,11 +27,11 @@ jobs:
         with:
           token: ${{secrets.github_token}}
       - name: Save version
-        env:
-          version: "${{ steps.buildnumber.outputs.build_number }}"
-      - name: Create artifact name
-        env:
-          artifact_name: 'kniit_lib_rc_${{ env.version }}.zip'
+        run: echo "::set-env name=version::${{ steps.buildnumber.outputs.build_number }}"
+        shell: bash
+      - name: Save artifact name
+        run: echo "::set-env name=artifact_name::kniit_lib_rc_${{ env.version }}.zip"
+        shell: bash
       - name: Create archive
         uses: papeloto/action-zip@v1
         with:
