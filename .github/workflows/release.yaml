@@ -34,9 +34,6 @@ jobs:
         regex_pattern: '[0-9]+.[0-9]+.[0-9]+'
         regex_flags: 'gim'
         search_string: ${{ github.ref }}
-    - name: Print version
-      run: |
-        echo: "Release version = ${{ steps.release_version.outputs.first_match }}"
     - name: Create release
       uses: ncipollo/release-action@v1
       with:
