@@ -205,7 +205,7 @@ KNIIT_LIB_NAMESPACE {
                     throw createException2("ArrayList", "Can not add value");
                 }
             } else {
-                throw createException2("ArrayList", "Wrong index")
+                throw createException2("ArrayList", "Wrong index");
             }
         }
 
