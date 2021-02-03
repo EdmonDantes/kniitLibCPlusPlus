@@ -16,7 +16,7 @@ jobs:
     - name: Build with CMake
       uses: ashutoshvarma/action-cmake-build@master
       with:
-        configure-options: -DCMAKE_INSTALL_PATH=${{ runner.workspace }}\release
+        configure-options: -DCMAKE_INSTALL_PATH=${{ github.workspace }}\release
         install-build: true
     - name: Display the directory 
       run: ls
