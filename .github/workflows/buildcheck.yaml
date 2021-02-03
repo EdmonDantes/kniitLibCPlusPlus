@@ -1,0 +1,23 @@
+name: Build check
+on:
+  push:
+    braches: [ master ]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Display the directory
+        run: ls
+        shell: bash
+      - name: Build with CMake
+        uses: ashutoshvarma/action-cmake-build@master
+        with:
+          configure-options: -DCMAKE_INSTALL_PATH=${{ github.workspace }}\release
+          install-build: true
+      - name: Display the directory
+        run: ls
+        shell: bash
+      - name: Display the directory
+        run: ls ./release
+        shell: bash

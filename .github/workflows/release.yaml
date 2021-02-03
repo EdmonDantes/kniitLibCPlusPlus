@@ -29,21 +29,15 @@ jobs:
         regex_pattern: '[0-9]+.[0-9]+.[0-9]+'
         regex_flags: 'gim'
         search_string: ${{ github.ref }}
-    - name: Save version
-      run: echo "::set-env name=version::${{ steps.releaseversion.outputs.first_match }}"
-      shell: bash
-    - name: Save artifact name
-      run: echo "::set-env name=artifact_name::kniit_lib_release_${{ env.version }}.zip"
-      shell: bash
     - name: Create archive
       uses: papeloto/action-zip@v1
       with:
         files: release/ README_FOR_IMPORT_VS2019.txt
-        dest: ${{ env.artifact_name }}
+        dest: 'kniit_lib_release_${{ steps.releaseversion.outputs.first_match }}.zip'
     - name: Create release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: ${{ env.artifact_name }}
+        artifacts: 'kniit_lib_release_${{ steps.releaseversion.outputs.first_match }}.zip'
         bodyFile: 'README.md'
-        tag: ${{ env.version }}
+        tag: ${{ steps.releaseversion.outputs.first_match }}
         token: ${{ secrets.GITHUB_TOKEN }}
