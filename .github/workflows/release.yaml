@@ -24,3 +24,14 @@ jobs:
     - name: Display the directory 
       run: ls ./release
       shell: bash
+    - name: Create archive
+      uses: papeloto/action-zip@v1
+      with:
+        files: release/ README_FOR_IMPORT_VS2019.txt
+        dest: 'release_build.zip'
+    - name: Create release
+      uses: ncipollo/release-action@v1
+      with:
+        artifact: 'release_build.zip'
+        bodyFile: 'README.md'
+        token: ${{ secrets.GITHUB_TOKEN }}
