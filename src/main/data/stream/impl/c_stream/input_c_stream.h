@@ -51,8 +51,6 @@ KNIIT_LIB_NAMESPACE {
         bool isClose() const;
         bool canRead() const;
 
-
-
         uintmax position() const;
         void position(uintmax position);
 

@@ -2,10 +2,16 @@
  *      Copyright (c). 2020. Loginov Ilya Vladislavovoich. All rights reserved.
  *      You must get permission for all action with this code or part of code from email dantes2104@gmail.com
  */
+#include <locale>
 #include "../string.h"
 #include "../../data/stream/impl/liststream/input_list_stream.h"
 
 KNIIT_LIB_NAMESPACE {
+
+    String::String(uintmax countOfChar) {
+        value = new List<Number>(countOfChar);
+    }
+
     void String::addChar(Number ch) {
         if (value == nullptr) {
             value = new List<Number>();
@@ -341,6 +347,26 @@ KNIIT_LIB_NAMESPACE {
 
     bool String::operator==(const std::wstring &wstr) const {
         return operator==(String(wstr));
+    }
+
+    String String::toLower() {
+        String result = String(this->size());
+
+        for (int i = 0; i < this->size(); ++i) {
+            result.value->set(std::tolower(this->charAt(i).getInt32()), i);
+        }
+
+        return std::move(result);
+    }
+
+    String String::toUpper() {
+        String result = String(this->size());
+
+        for (int i = 0; i < this->size(); ++i) {
+            result.value->set(std::toupper(this->charAt(i).getInt32()), i);
+        }
+
+        return std::move(result);
     }
 
     int StringComparator::compare(const String &a, const String &b) const {

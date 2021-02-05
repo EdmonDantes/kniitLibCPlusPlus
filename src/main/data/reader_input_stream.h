@@ -29,12 +29,46 @@ KNIIT_LIB_NAMESPACE {
 
         bool canRead();
 
+        /**
+         * @return Char which decode codec
+         */
         Number readChar();
+
+        /**
+         * @param length max strings length
+         * @param lastChar last char
+         * @param addLastChar if true last char will be added to string
+         * @return String with length equals <b>length</b> or less and stopped on <b>lastChar</b>
+         */
         String readString(uintmax length = 0, Number lastChar = '\n', bool addLastChar = false);
 
+        /**
+         * @return Boolean value from input in format (true/false/TRUE/FALSE) or (1/0).
+         */
         bool readBoolean();
+
+        /**
+         * Read decimal integer or real number (examples: '-554', '-85,25', '96.25')
+         * @param delimiter last char which mark numbers end (default: space)
+         */
         Number readNumber(Number delimiter=' ');
-        Number readColor();
+
+        /**
+         * Read color value from specified format:
+         * <ul>
+         * <li>rgb(255;12;25)</li>
+         * <li>argb(188;255;12;25)</li>
+         * <li>rgb(0(,/.)2;0(,/.)3;0(,/.)4)</li>
+         * <li>argb(1(,/.)0;0(,/.)2;0(,/.)3;0(,/.)4)</li>
+         * <li>#AARRGGBB</li>
+         * <li>#RRGGBB</li>
+         * <li>#ARGB</li>
+         * <li>#RGB</li>
+         * </ul>
+         * @param delimiter last char which mark hex color end <i>(default: space. Using only in format which start with <b>#</b>)</i>
+         * @return ARGB colors number
+         */
+        Number readColor(Number delimiter = ' ');
         List<uint8_t> readHex();
         List<Number> readList();
         Set<Number> readSet();

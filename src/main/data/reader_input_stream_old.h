@@ -32,13 +32,7 @@
 //        void setSkip(bool skip);
 //
 //
-//        /*
-//            Read boolean value from input in format (true/false) or (1/0).
-//            If case sensitive, read only (TRUE/FALSE), and (1/0).
-//
-//            If you use other format throw exception KNIIT_LIB_ERROR_FORMAT_ERROR
-//            If can`t read throw exception KNIIT_LIB_ERROR_CAN_NOT_READ
-//        */
+
 //        bool readBoolean(bool caseSensitive = false, bool unicode = false, bool utf8 = true, ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
 //
 //        /*
@@ -131,20 +125,7 @@
 //        */
 //        String readUnicodeString(uintmax length = 0, bool utf8 = false, bool addEndChar = false, Number endChar = '\n', ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
 //
-//        /*
-//            Read color value from input in format
-//                rgb(255;12;25)
-//                argb(188;255;12;25)
-//                rgb(0(,/.)2;0(,/.)3;0(,/.)4)
-//                argb(1(,/.)0;0(,/.)2;0(,/.)3;0(,/.)4)
-//                #AARRGGBB
-//                #RRGGBB
-//                #ARGB
-//                #RGB
 //
-//            If you use other format throw exception KNIIT_LIB_ERROR_FORMAT_ERROR
-//            If can`t read throw exception KNIIT_LIB_ERROR_CAN_NOT_READ
-//        */
 //        Number readColor(uint8_t zeroAlpha = 0, bool unicode = false, bool utf8 = true, ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
 //
 //        /*

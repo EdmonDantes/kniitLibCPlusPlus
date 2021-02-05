@@ -165,7 +165,8 @@ KNIIT_LIB_NAMESPACE {
     }
 
     Number::Number(const Number& number) {
-        init(number.status, (uint8_t*)number.number);
+        this->status = number.status;
+        memcpy(this->number, number.number, 8);
     }
 
     Number::~Number() {

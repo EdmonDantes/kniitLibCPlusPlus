@@ -98,10 +98,10 @@ KNIIT_LIB_NAMESPACE {
         int decimalPartShift = -1;
         bool sign = false;
 
-        uint8_t number_value[std::max(sizeof(intmax), sizeof(double))];
+        uint8_t number_value[std::max(sizeof(uintmax), sizeof(double))];
         void* number = &number_value;
 
-        *((long*) number) = 0;
+        *((uintmax*) number) = 0;
 
         while (canRead()) {
             Number ch = readChar();
@@ -123,6 +123,7 @@ KNIIT_LIB_NAMESPACE {
             } else if (ch == '-' && (stream->position() - startPosition) < 2) {
                 sign = true;
             } else if (ch == delimiter) {
+                stream->position(stream->position() - 1);
                 break;
             } else {
                 stream->position(startPosition);
@@ -130,8 +131,133 @@ KNIIT_LIB_NAMESPACE {
             }
         }
 
-        Number result = decimalPartShift > -1 ? Number(*((double*) number)) : Number( *((intmax*) number));
+        Number result = decimalPartShift > -1 ? Number(*((double*) number)) : Number((*((uintmax*) number)));
         return sign ? -result : result;
+    }
+
+    Number ReaderInputStream::readColor(Number delimiter) {
+        uintmax startPosition = stream->position();
+
+        int8_t countCharacterInSharpType = -1;
+        uint8_t args[8];
+        String word;
+
+        while (canRead()) {
+            Number ch = readChar();
+
+            if (ch == '#') {
+                if (word.isEmpty()) {
+                    countCharacterInSharpType = 0;
+                    continue;
+                } else {
+                    stream->position(startPosition);
+                    createException2("ReaderInputStream", "Wrong color format");
+                }
+            }
+
+            if (countCharacterInSharpType > -1) {
+                uint8_t tmp = ch.getUInt8();
+                if (ch >= '0' && ch <= '9') {
+                    tmp -= '0';
+                } else if (ch >= 'a' && ch <= 'f') {
+                    tmp -= 'a' - 10;
+                } else if (ch >= 'A' && ch <= 'F') {
+                    tmp -= 'A' - 10;
+                } else if (ch == delimiter) {
+                    break;
+                } else {
+                    stream->position(startPosition);
+                    createException2("ReaderInputStream", "Wrong color format");
+                }
+
+                args[countCharacterInSharpType] = tmp;
+                countCharacterInSharpType++;
+            } else {
+                if (ch == '(') {
+                    word = word.toLower();
+                    if (word == "rgb") {
+                        Number r = readNumber(';');
+                        read();
+                        Number g = readNumber(';');
+                        read();
+                        Number b = readNumber(')');
+                        read();
+
+                        if (r.isDouble() || g.isDouble() || b.isDouble()) {
+                            r *= 255;
+                            g *= 255;
+                            b *= 255;
+                        }
+
+                        return ((r.getUInt() & 0xff) << 16)  + ((g.getUInt() & 0xff) << 8) + (b.getUInt() & 0xff);
+                    } else if (word == "argb") {
+                        Number a = readNumber(';');
+                        read();
+                        Number r = readNumber(';');
+                        read();
+                        Number g = readNumber(';');
+                        read();
+                        Number b = readNumber(')');
+                        read();
+
+                        if (a.isDouble() || r.isDouble() || g.isDouble() || b.isDouble()) {
+                            a *= 255;
+                            r *= 255;
+                            g *= 255;
+                            b *= 255;
+                        }
+
+                        return ((a.getUInt() & 0xff) << 24) + ((r.getUInt() & 0xff) << 16)  + ((g.getUInt() & 0xff) << 8) + (b.getUInt() & 0xff);
+                    } else {
+                        stream->position(startPosition);
+                        createException2("ReaderInputStream", "Wrong color format");
+                    }
+                } else {
+                    word += ch;
+                }
+
+
+                if (word.size() > 4) {
+                    stream->position(startPosition);
+                    createException2("ReaderInputStream", "Wrong color format");
+                }
+            }
+        }
+
+        if (countCharacterInSharpType > -1) {
+            if (countCharacterInSharpType == 8) {
+                Number result = 0;
+                for (int i = 0; i < 4; ++i) {
+                    uint8_t tmp = (args[i * 2] << 4) + args[i * 2 + 1];
+                    result += ((uintmax) tmp) << (24 - 8 * i);
+                }
+                return result;
+            } else if (countCharacterInSharpType == 6) {
+                Number result = 0;
+                for (int i = 0; i < 3; ++i) {
+                    uint8_t tmp = (args[i * 2] << 4) + args[i * 2 + 1];
+                    result += ((uintmax) tmp) << (16 - 8 * i);
+                }
+                return result;
+            } else if (countCharacterInSharpType == 4) {
+                Number result = 0;
+                for (int i = 0; i < 4; ++i) {
+                    uint8_t tmp = 0xff * (args[i] / (float) 0xf);
+                    result += ((uintmax) tmp) << (24 - 8 * i);
+                }
+                return result;
+            } else if (countCharacterInSharpType == 3){
+                Number result = 0;
+                for (int i = 0; i < 3; ++i) {
+                    uint8_t tmp = 0xff * (args[i] / (float) 0xf);
+                    result += ((uintmax) tmp) << (16 - 8 * i);
+                }
+                return result;
+            }
+        }
+
+        stream->position(startPosition);
+        createException2("ReaderInputStream", "Wrong color format");
     }
 
 };

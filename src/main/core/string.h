@@ -15,7 +15,10 @@ KNIIT_LIB_NAMESPACE {
     private:
         List<Number>* value = nullptr;
 
+        String(uintmax countOfChar);
+
         void addChar(Number ch);
+
     public:
 
         String();

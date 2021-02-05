@@ -1,3 +1,14 @@
+Version 0.3.5
+    Fix:
+        Number internal storage for value
+    Edit:
+        Optimize Number copy constructor
+        Change sizeof type for temporary storage for number in readNumber() in ReaderInputStream
+    Add:
+        Private construct in String for pre init internal storage
+        Implementation for toLower() and toUpper() for String
+        Implementation for readColor() in ReaderInputStream
+
 Version 0.3.4
     Fix:
         Codec for UTF-16. Fix encode characters.

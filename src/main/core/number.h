@@ -21,8 +21,7 @@
 KNIIT_LIB_NAMESPACE {
 
     KNIIT_LIB_CLASS Number {
-    private:
-
+     private:
         /*
             Status bits:
             0 - Fixed status
@@ -38,7 +37,7 @@ KNIIT_LIB_NAMESPACE {
             Signed bit all be 1 if used decimal value
         */
         uint8_t status;
-        uint8_t* number[8];
+        uint8_t number[8];
 
         static const uint8_t IS_FIXED_STATUS = 1;
 
