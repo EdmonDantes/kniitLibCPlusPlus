@@ -1,4 +1,5 @@
 # KNIIT library
+![Build check](https://github.com/EdmonDantes/kniitLibCPlusPlus/workflows/Build%20check/badge.svg)
 ## English
 ### Support coding
 `ReaderInputStream` and `WriterOutputStream` support `UTF-16LE`, `UTF-16BE` and `UTF-8`
