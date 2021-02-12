@@ -50,7 +50,7 @@ add_library(kniitLibrary SHARED
         src/main/data/stream/impl/buffered/buffered_output_stream.h
         src/main/data/stream/impl/buffered/buffered_stream_core.h
         src/main/data/reader_input_stream.h
-        src/main/data/source/reader_input_stream.cpp)
+        src/main/data/source/reader_input_stream.cpp src/main/data/delimiter_strategy.h)
 
 
 

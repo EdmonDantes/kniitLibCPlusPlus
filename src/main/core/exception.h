@@ -20,17 +20,22 @@
 
 KNIIT_LIB_NAMESPACE {
 
-    KNIIT_LIB_CLASS Exception : std::exception {
+    KNIIT_LIB_CLASS Exception : public std::exception {
             private:
-            intmax code;
+        intmax code;
             intmax line;
             std::string className;
             std::string methodName;
             std::string fileName;
             std::string message;
             Exception* cause;
+
+            std::string getMessage(int countTabs) const;
+
             public:
             Exception(intmax code, std::string className, std::string methodName, std::string fileName, int lineOfCode, std::string message, Exception* cause);
+            Exception(Exception&& exception) = default;
+            ~Exception();
 
             operator const char* ();
             intmax getCode();
@@ -38,8 +43,9 @@ KNIIT_LIB_NAMESPACE {
             std::string getMessage();
             std::string getClassName();
             std::string getMethodName();
-            std::string getFullMessage();
+            std::string getFullMessage() const;
             Exception* getCause();
+            const char* what() const override;
     };
 
 
@@ -47,7 +53,7 @@ KNIIT_LIB_NAMESPACE {
     #define getFileName() __FILENAME__
     #define getLineOfCode() __LINE__
     #define DEFAULT_EXCEPTION_TYPE Exception*
-    #define createException4(code, className, message, cause) new Exception((code), (className), getFunctionName(), getFileName(), getLineOfCode(), (message), (cause))
+    #define createException4(code, className, message, cause) Exception((code), (className), getFunctionName(), getFileName(), getLineOfCode(), (message), (cause))
     #define createException3(className, message, cause) createException4(-1, (className), (message), (cause))
     #define createException2(className, message) createException3((className), (message), nullptr)
 

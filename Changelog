@@ -1,3 +1,14 @@
+Version 0.3.6
+    Edit:
+        Change delimiters arguments in method ReaderInputStream
+    Add:
+        Override 'what' method in class Exception
+        Add method 'getMessage'. It possible to add different count of tabs
+        Add method 'find' to List
+        Add class DelimiterStrategy
+        Add methods 'readHex', 'readNumberList', 'readList' in ReaderInputStream
+        Add pretty printers in lldb debugger
+
 Version 0.3.5
     Fix:
         Number internal storage for value

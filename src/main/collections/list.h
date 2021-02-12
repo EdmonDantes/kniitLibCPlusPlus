@@ -329,6 +329,23 @@ KNIIT_LIB_NAMESPACE {
         }
 
         /**
+         * Find value in list
+         * @tparam F equals function bool (T, T)
+         * @param value value for find
+         * @param func equals function
+         * @return True if list contains value
+         */
+        template<typename F>
+        bool find(const T& value, F func) const {
+            for (int i = 0; i < _size; ++i) {
+                if (func(this->value[i], value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
          * Change size of this list
          * @param size New list's size
          * @param removeData If true, can remove some data

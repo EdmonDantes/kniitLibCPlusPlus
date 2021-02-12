@@ -168,7 +168,7 @@
 //            If you use other format throw exception KNIIT_LIB_ERROR_FORMAT_ERROR
 //            If can`t read throw exception KNIIT_LIB_ERROR_CAN_NOT_READ
 //        */
-//        List<Number> readList(uintmax maxLength = 0, DataType inputType = DataTypes::NUMBER, bool unicode = false, bool utf8 = true, ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
+//        List<Number> readNumberList(uintmax maxLength = 0, DataType inputType = DataTypes::NUMBER, bool unicode = false, bool utf8 = true, ByteOrder byteOrder = DEFAULT_BYTE_ORDER);
 //
 //        /*
 //            Read set values from input if format

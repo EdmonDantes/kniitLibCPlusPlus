@@ -572,7 +572,7 @@
 //        }
 //    }
 //
-//    List<Number> ReaderInputStream::readList(uintmax maxLength, DataType inputType, bool unicode, bool utf8, ByteOrder byteOrder) {
+//    List<Number> ReaderInputStream::readNumberList(uintmax maxLength, DataType inputType, bool unicode, bool utf8, ByteOrder byteOrder) {
 //        uintmax startPosition = position();
 //
 //        List<Number> result;
