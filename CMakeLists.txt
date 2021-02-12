@@ -54,8 +54,8 @@ add_library(kniitLibrary SHARED
 
 
 
-add_executable(testLibrary src/test/source/library.cpp)
-target_link_libraries(testLibrary kniitLibrary)
+#add_executable(testLibrary src/test/source/library.cpp)
+#target_link_libraries(testLibrary kniitLibrary)
 
 INSTALL(TARGETS kniitLibrary DESTINATION ${CMAKE_INSTALL_PATH}/dll)
 INSTALL (
