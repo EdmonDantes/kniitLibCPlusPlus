@@ -38,7 +38,7 @@ KNIIT_LIB_NAMESPACE {
         std::string fileName,
         int lineOfCode,
         std::string message,
-        Exception * cause) {       {
+        Exception * cause) {
             this->code = code;
             this->className = className;
             this->methodName = methodName;
@@ -46,7 +46,6 @@ KNIIT_LIB_NAMESPACE {
             this->line = lineOfCode;
             this->message = message;
             this->cause = cause;
-        }
     }
 
     Exception::~Exception() noexcept {

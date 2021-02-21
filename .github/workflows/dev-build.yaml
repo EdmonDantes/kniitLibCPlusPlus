@@ -1,8 +1,8 @@
-name: Build check
+name: Build and create development artifacts
 on:
   push:
-    paths-ignore:
-      - 'gradle.properties'
+    branches-ignore:
+      - 'master'
 
 jobs:
   build:
@@ -25,7 +25,6 @@ jobs:
               os: macos-latest
           }
 
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -40,3 +39,12 @@ jobs:
         with:
           arguments: clean prepareArtifactRelease
           gradle-version: 6.8.2
+      - name: Create artifacts
+        uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: createZipArtifacts
+          gradle-version: 6.8.2
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: 'build/artifacts/*'

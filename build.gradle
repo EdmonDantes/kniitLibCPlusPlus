@@ -44,17 +44,17 @@ task prepareArtifactRelease {
     def buildVariantsFile = file('gradle_build_variants.json')
     if (buildVariantsFile.exists()) {
         def buildVariants = new groovy.json.JsonSlurper().parseText(buildVariantsFile.text)
-		
+
 		def artifactsFolder = file('build/artifacts')
 		if (!artifactsFolder.exists()) {
 			mkdir artifactsFolder
 		}
-		
+
 		def tmpFolder = file('build/tmp/prepareArtifactRelease')
 		if (!tmpFolder.exists()) {
 			mkdir tmpFolder
 		}
-		
+
 		def headersZip = zipTree('build/headers/cpp-api-headers.zip')
 
 		def List<String> tasksNames = new ArrayList<>();
@@ -98,8 +98,6 @@ task prepareArtifactRelease {
 		}
 
 		task createZipArtifacts(dependsOn: tasksNames)
-		createZipArtifacts{}
-        
     }
 }
 
