@@ -1,0 +1,33 @@
+{
+  "variants": [
+    {
+      "variant_name": "Windows",
+      "variant_architecture": "X86",
+      "build_folder_path": "windows/x86"
+    },
+    {
+      "variant_name": "Windows",
+      "variant_architecture": "X86-64",
+      "build_folder_path": "windows/x86-64"
+    },
+    {
+      "variant_name": "Linux",
+      "variant_architecture": "X86",
+      "build_folder_path": "linux/x86"
+    },
+    {
+      "variant_name": "Linux",
+      "variant_architecture": "X86-64",
+      "build_folder_path": "linux/x86-64"
+    },
+    {
+      "variant_name": "MacOS",
+      "variant_architecture": "X86-64",
+      "build_folder_path": "masOS/x86-64"
+    }
+  ],
+  "include": [
+    "README_FOR_IMPORT_VS2019.txt",
+    "README.md"
+  ]
+}

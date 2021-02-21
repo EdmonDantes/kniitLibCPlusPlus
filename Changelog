@@ -1,0 +1,61 @@
+Version 0.3.6
+    Edit:
+        Change delimiters arguments in method ReaderInputStream
+    Add:
+        Override 'what' method in class Exception
+        Add method 'getMessage'. It possible to add different count of tabs
+        Add method 'find' to List
+        Add class DelimiterStrategy
+        Add methods 'readHex', 'readNumberList', 'readList' in ReaderInputStream
+        Add pretty printers in lldb debugger
+
+Version 0.3.5
+    Fix:
+        Number internal storage for value
+    Edit:
+        Optimize Number copy constructor
+        Change sizeof type for temporary storage for number in readNumber() in ReaderInputStream
+    Add:
+        Private construct in String for pre init internal storage
+        Implementation for toLower() and toUpper() for String
+        Implementation for readColor() in ReaderInputStream
+
+Version 0.3.4
+    Fix:
+        Codec for UTF-16. Fix encode characters.
+        Method to in String encode zero value in codec and added result, if it needed.
+    Add:
+        Add two constructors in String class, for characters arrays with length
+        Add readNumber() method in ReaderInputStream
+
+Version 0.3
+    Fix:
+        Increasing size of List
+    Add:
+        Add ASCII codec
+        Add classes buffered streams
+
+Version 0.2.1:
+    Fix:
+        Deleting C stream in InputCStream and OutputCStream.
+    Edit:
+        Edit ReaderInputStream and WriterInputStream (change all classes)
+    Add:
+        Add special argument for InputCStream and OutputCStream which will control deleting inner stream (Default: false. It mean, inner stream will not deleted).
+        toLower and toUpper to String class
+
+
+
+Version 0.2:
+    Fix:
+        Support all unicode formats (UTF-8, UTF-16, UTF-32 with different byte order)
+        Comparator method modificator was private, now public.
+    Add:
+        String class
+        Codec interface
+        Status class
+        Stream interfaces and implementations
+        Some WinForms functions
+        List:
+            Constructor from array
+            Methods addAll, toArray, add(value, index), set

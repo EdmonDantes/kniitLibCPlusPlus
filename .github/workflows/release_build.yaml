@@ -1,0 +1,46 @@
+name: Build release variant
+on:
+  push:
+    tags:
+      - 'RELEASE-[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Windows latest"
+              os: windows-latest
+          }
+          - {
+              name: "Linux latest"
+              os: linux-latest
+          }
+          - {
+              name: "macOS latest"
+              os: macos-latest
+          }
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+      - name: Build with Gradle
+        run: ./gradlew clean prepareArtifactRelease
+      - name: Create artifacts
+        run: ./gradlew createZipArtifacts
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/artifacts/*"
+          bodyFile: 'README.md'
+          allowUpdates: true
+          replacesArtifacts: false
+          tag: ${{ steps.releaseversion.outputs.first_match }}
+          token: ${{ secrets.GITHUB_TOKEN }}
