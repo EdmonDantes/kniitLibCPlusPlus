@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.9] - 2021-03-06
+### Added
+- Class `Status`
+- - Method `checkMask`
+- - Method `getValue`
+- - Operator `=` for `T`
+- Class `TestContext` for pretty testing    
+### Changed
+- Class `Status`
+- - Set `explicit` constructor from `T`
+- Class `Number`
+- - Using class `Status` instead `uint8` for field `status`
+- - Using compile time expression for compute size for field `number`    
+### Removed
+- Class `Number`
+- - Method `checkNumber`
+- - Method `checkMask`    
+
+
 ## [0.3.8] - 2021-02-22
 ### Fixed
 - Fixed building for linux operation system.

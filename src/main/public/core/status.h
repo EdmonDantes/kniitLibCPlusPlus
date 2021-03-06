@@ -17,7 +17,8 @@ KNIIT_LIB_NAMESPACE {
         Status() {
             this->value = 0;
         }
-        Status(T value) {
+
+        explicit Status(T value) {
             this->value = value;
         };
 
@@ -25,13 +26,22 @@ KNIIT_LIB_NAMESPACE {
             this->value = value.value;
         }
 
-        Status& operator=(Status& value) {
-            this->value = value.value;
+        Status& operator=(const Status& value) = default;
+        Status& operator=(const T& value) {
+            this->value = value;
             return *this;
         }
 
-        bool check(uint8 bitIndex) {
+        T getValue() const {
+            return value;
+        }
+
+        bool check(uint8 bitIndex) const {
             return (value & (1 << bitIndex)) != 0;
+        }
+
+        bool checkMask(T value) const {
+            return (this->value & value) == value;
         }
 
         void add(uint8 bitIndex) {
@@ -46,7 +56,7 @@ KNIIT_LIB_NAMESPACE {
             this->value = 0;
         }
 
-        bool isEmpty() {
+        bool isEmpty() const {
             return this->value == 0;
         }
     };

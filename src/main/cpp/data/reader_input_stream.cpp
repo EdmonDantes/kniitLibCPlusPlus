@@ -452,5 +452,8 @@ KNIIT_LIB_NAMESPACE {
         return std::move(result);
     }
 
+//    Set<Number> ReaderInputStream::readSet() {
+//    }
+
 };
 

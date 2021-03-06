@@ -36,8 +36,10 @@ KNIIT_LIB_NAMESPACE {
             Fixed status mean you can not change number type
             Signed bit all be 1 if used decimal value
         */
-        uint8 status;
-        uint8 number[8];
+        static constexpr int _numberSize = sizeof(uintmax) > sizeof(double) ? sizeof(uintmax) : sizeof(double);
+
+        Status<uint8> status;
+        uint8 number[_numberSize];
 
         static const uint8 IS_FIXED_STATUS = 1;
 
@@ -75,6 +77,7 @@ KNIIT_LIB_NAMESPACE {
         | IS_UINT64
         #endif
         ;
+
         static const uint8 IS_INT =
                 IS_INT8
                 | IS_INT16
@@ -86,9 +89,6 @@ KNIIT_LIB_NAMESPACE {
 
 
         bool checkStatus() const;
-        bool checkNumber() const;
-        bool checkMask(uint8 mask) const;
-
         bool isFixed() const;
 
         inline uint8* getPointer(int lowBytes = 0) const;
@@ -107,7 +107,7 @@ KNIIT_LIB_NAMESPACE {
         Number(uint8 status, T number);
 
         template <typename F>
-        void selfArifmeticFunction(const Number& value, F func);
+        void selfArithmeticFunction(const Number& value, F func);
     public:
 
 
@@ -156,12 +156,12 @@ KNIIT_LIB_NAMESPACE {
         float getFloat() const;
         double getDouble() const;
 
-        uint8* getBytes();
+        uint8* getBytes() const;
 
-        Number operator+(const Number& value);
-        Number operator-(const Number& value);
-        Number operator*(const Number& value);
-        Number operator/(const Number& value);
+        Number operator+(const Number& value) const;
+        Number operator-(const Number& value) const;
+        Number operator*(const Number& value) const;
+        Number operator/(const Number& value) const;
         Number& operator=(const Number& value);
 
         Number& operator+=(const Number& value);

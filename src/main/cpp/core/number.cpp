@@ -9,19 +9,11 @@
 KNIIT_LIB_NAMESPACE {
 
     bool Number::checkStatus() const {
-        return status != 0 && status != 1;
-    }
-
-    bool Number::checkNumber() const {
-        return checkStatus();
-    }
-
-    bool Number::checkMask(uint8 mask) const {
-        return (status & mask) == mask;
+        return !status.isEmpty() && !status.checkMask(1);
     }
 
     bool Number::isFixed() const {
-        return checkMask(IS_FIXED_STATUS);
+        return status.checkMask(IS_FIXED_STATUS);
     }
 
     inline uint8* Number::getPointer(int lowBytes) const {
@@ -63,7 +55,7 @@ KNIIT_LIB_NAMESPACE {
                 if (isInteger) {
                     this->status = isSigned ? IS_INT64 : IS_UINT64;
                 } else
-                    #endif
+                #endif
                 if (isSigned) {
                     this->status = IS_DOUBLE;
                 } else {
@@ -78,7 +70,7 @@ KNIIT_LIB_NAMESPACE {
 
     template <typename T>
     T Number::get() const {
-        if (!checkNumber()) {
+        if (!checkStatus()) {
             throw createException2("Number", "Can not get value from number, because it is NAN");
         }
 
@@ -107,8 +99,9 @@ KNIIT_LIB_NAMESPACE {
         }
             #endif // KNIIT_LIB_USE_X64
         else {
-            throw createException2("Number", "Illegal status of number");
+            throw createException2("Number", "Illegal status of number. Status = " + std::to_string(status.getValue()));
         }
+
         return 0;
     }
 
@@ -176,7 +169,9 @@ KNIIT_LIB_NAMESPACE {
     Number::Number(uint8* number, uintmax size, bool isFixed) {
         memcpy(getPointer(size > 7 ? 0 : size), number, size > 7 ? 0 : size);
         setStatus(false, false, size);
-        status |= isFixed ? IS_FIXED_STATUS : 0;
+        if (isFixed) {
+            status.add(IS_FIXED_STATUS);
+        }
     }
 
     Number::Number(const Number& number) {
@@ -185,11 +180,11 @@ KNIIT_LIB_NAMESPACE {
     }
 
     Number::~Number() {
-        this->status = 0;
+        this->status.clear();
     }
 
     bool Number::isSigned() const {
-        return checkMask(IS_SIGNED_VALUE);
+        return status.checkMask(IS_SIGNED_VALUE);
     }
 
     int Number::size() const {
@@ -198,13 +193,13 @@ KNIIT_LIB_NAMESPACE {
             return 0;
         }
 
-        if (checkMask(IS_USE_8_BIT)) {
+        if (status.checkMask(IS_USE_8_BIT)) {
             return 1;
-        } else if (checkMask(IS_USE_16_BIT)) {
+        } else if (status.checkMask(IS_USE_16_BIT)) {
             return 2;
-        } else if (checkMask(IS_USE_32_BIT)) {
+        } else if (status.checkMask(IS_USE_32_BIT)) {
             return 4;
-        } else if (checkMask(IS_USE_64_BIT)) {
+        } else if (status.checkMask(IS_USE_64_BIT)) {
             return 8;
         } else {
             return 0;
@@ -232,35 +227,35 @@ KNIIT_LIB_NAMESPACE {
     }
 
     bool Number::isInt8() const {
-        return isInt() && checkMask(IS_USE_8_BIT);
+        return isInt() && status.checkMask(IS_USE_8_BIT);
     }
 
     bool Number::isInt16() const {
-        return isInt() && checkMask(IS_USE_16_BIT);
+        return isInt() && status.checkMask(IS_USE_16_BIT);
     }
 
     bool Number::isInt32() const {
-        return isInt() && checkMask(IS_USE_32_BIT);
+        return isInt() && status.checkMask(IS_USE_32_BIT);
     }
 
     bool Number::isUInt8() const {
-        return isUInt() && checkMask(IS_USE_8_BIT);
+        return isUInt() && status.checkMask(IS_USE_8_BIT);
     }
 
     bool Number::isUInt16() const {
-        return isUInt() && checkMask(IS_USE_16_BIT);
+        return isUInt() && status.checkMask(IS_USE_16_BIT);
     }
 
     bool Number::isUInt32() const {
-        return isUInt() && checkMask(IS_USE_32_BIT);
+        return isUInt() && status.checkMask(IS_USE_32_BIT);
     }
 
     bool Number::isFloat() const {
-        return checkMask(IS_FLOAT);
+        return status.checkMask(IS_FLOAT);
     }
 
     bool Number::isDouble() const {
-        return checkMask(IS_DOUBLE);
+        return status.checkMask(IS_DOUBLE);
     }
 
     intmax Number::getInt() const {
@@ -303,7 +298,7 @@ KNIIT_LIB_NAMESPACE {
         return get<double>();
     }
 
-    uint8* Number::getBytes() {
+    uint8* Number::getBytes() const {
         int count = size();
         uint8* result = new uint8[count];
         memcpy(result, getPointer(count), count);
@@ -311,7 +306,7 @@ KNIIT_LIB_NAMESPACE {
     }
 
     template <typename F>
-    Number arifmeticFunction(const Number* a, const Number* b, F func) {
+    Number arithmeticFunction(const Number* a, const Number* b, F func) {
         if (a->isUInt() && b->isUInt()) {
             return func(a->getUInt(), b->getUInt());
         } else if ((a->isInt() || a->getUInt()) && (b->isInt() || b->isUInt())) {
@@ -327,75 +322,139 @@ KNIIT_LIB_NAMESPACE {
         }
     }
 
-    Number Number::operator+(const Number& value) {
-        return arifmeticFunction(this, &value, [](auto a, auto b) { return a + b; });
+    Number Number::operator+(const Number& value) const {
+        return arithmeticFunction(this, &value, [](auto a, auto b) { return a + b; });
     }
 
-    Number Number::operator-(const Number& value) {
-        return arifmeticFunction(this, &value, [](auto a, auto b) { return a - b; });
+    Number Number::operator-(const Number& value) const {
+        return arithmeticFunction(this, &value, [](auto a, auto b) { return a - b; });
     }
 
-    Number Number::operator*(const Number& value) {
-        return arifmeticFunction(this, &value, [](auto a, auto b) { return a * b; });
+    Number Number::operator*(const Number& value) const {
+        return arithmeticFunction(this, &value, [](auto a, auto b) { return a * b; });
     }
 
-    Number Number::operator/(const Number& value) {
-        return arifmeticFunction(this, &value, [](auto a, auto b) { return a / b; });
+    Number Number::operator/(const Number& value) const {
+        return arithmeticFunction(this, &value, [](auto a, auto b) { return a / b; });
+    }
+
+    Number Number::operator&(const Number& value) {
+        if (value.isInteger()) {
+            if (isInt() || value.isInt()) {
+                return getInt() & value.getInt();
+            } else {
+                return getUInt() & value.getUInt();
+            }
+        } else {
+            return *this;
+        }
+    }
+
+    Number Number::operator|(const Number& value) {
+        if (value.isInteger()) {
+            if (isInt() || value.isInt()) {
+                return getInt() | value.getInt();
+            } else {
+                return getUInt() | value.getUInt();
+            }
+        } else {
+            return *this;
+        }
+    }
+
+    Number Number::operator<<(const Number& value) {
+        if (value.isInteger()) {
+            if (isInt() || value.isInt()) {
+                return getInt() << value.getInt();
+            } else {
+                return getUInt() << value.getUInt();
+            }
+        } else {
+            return *this;
+        }
+    }
+
+    Number Number::operator>>(const Number& value) {
+        if (value.isInteger()) {
+            if (isInt() || value.isInt()) {
+                return getInt() >> value.getInt();
+            } else {
+                return getUInt() >> value.getUInt();
+            }
+        } else {
+            return *this;
+        }
+    }
+
+    Number Number::operator-() {
+        if (isDouble()) {
+            return -getDouble();
+        } else if (isFloat()) {
+            return -getFloat();
+        } else if (isInteger()) {
+            if (isUInt() && isFixed()) {
+                throw createException2("Number", "Status is fixed for unsigned integer value");
+            } else {
+                return -getInt();
+            }
+        } else {
+            throw createException2("Number", "Not support operation");
+        }
     }
 
     Number& Number::operator=(const Number& value) {
-        memcpy(number, value.number, 8);
-        status = value.status;
+        memcpy(this->number, value.number, 8);
+        this->status = value.status;
         return *this;
     }
 
     template <typename F>
-    void Number::selfArifmeticFunction(const Number& value, F func) {
-        const Number* futureType = value.status > status ? &value : this;
+    void Number::selfArithmeticFunction(const Number& value, F func) {
+        const Number* futureType = value.status.getValue() > status.getValue() ? &value : this;
         int futureSize = size() > value.size() ? size() : value.size();
 
         if (futureType->isUInt()) {
             if (!set(func(this->getUInt(), value.getUInt()), true, false, futureSize)) {
-                throw "Error";
+                throw createException2("Number", "Can not set number in self arithmetic function");
             }
         } else if (futureType->isInt()) {
             if (value.getInt() >= 0 && this->getInt() >= 0) {
                 if (!set(func(this->getUInt(), value.getUInt()), true, false, futureSize)) {
-                    throw "Error";
+                    throw createException2("Number", "Can not set number in self arithmetic function");
                 }
             } else {
                 if (!set(func(this->getInt(), value.getInt()), true, true, futureSize)) {
-                    throw "Error";
+                    throw createException2("Number", "Can not set number in self arithmetic function");
                 }
             }
         } else if (futureType->isFloat()) {
             if (!set(func(this->getFloat(), value.getFloat()), false, true, futureSize)) {
-                throw "Error";
+                throw createException2("Number", "Can not set number in self arithmetic function");
             }
         } else if (futureType->isDouble()) {
             if (!set(func(this->getDouble(), value.getDouble()), false, true, futureSize)) {
-                throw "Error";
+                throw createException2("Number", "Can not set number in self arithmetic function");
             }
         }
     }
 
     Number& Number::operator+=(const Number& value) {
-        selfArifmeticFunction(value, [](auto a, auto b) { return a + b; });
+        selfArithmeticFunction(value, [](auto a, auto b) { return a + b; });
         return *this;
     }
 
     Number& Number::operator-=(const Number& value) {
-        selfArifmeticFunction(value, [](auto a, auto b) { return a - b; });
+        selfArithmeticFunction(value, [](auto a, auto b) { return a - b; });
         return *this;
     }
 
     Number& Number::operator*=(const Number& value) {
-        selfArifmeticFunction(value, [](auto a, auto b) { return a * b; });
+        selfArithmeticFunction(value, [](auto a, auto b) { return a * b; });
         return *this;
     }
 
     Number& Number::operator/=(const Number& value) {
-        selfArifmeticFunction(value, [](auto a, auto b) { return a / b; });
+        selfArithmeticFunction(value, [](auto a, auto b) { return a / b; });
         return *this;
     }
 
@@ -447,70 +506,6 @@ KNIIT_LIB_NAMESPACE {
         return !operator==(value);
     }
 
-    Number Number::operator&(const Number& value) {
-        if (value.isInteger()) {
-            if (isInt() || value.isInt()) {
-                return (getInt() & value.getInt());
-            } else {
-                return (getUInt() & value.getUInt());
-            }
-        } else {
-            return *this;
-        }
-    }
-
-    Number Number::operator|(const Number& value) {
-        if (value.isInteger()) {
-            if (isInt() || value.isInt()) {
-                return (getInt() | value.getInt());
-            } else {
-                return (getUInt() | value.getUInt());
-            }
-        } else {
-            return *this;
-        }
-    }
-
-    Number Number::operator<<(const Number& value) {
-        if (value.isInteger()) {
-            if (isInt() || value.isInt()) {
-                return (getInt() << value.getInt());
-            } else {
-                return (getUInt() << value.getUInt());
-            }
-        } else {
-            return *this;
-        }
-    }
-
-    Number Number::operator>>(const Number& value) {
-        if (value.isInteger()) {
-            if (isInt() || value.isInt()) {
-                return (getInt() >> value.getInt());
-            } else {
-                return (getUInt() >> value.getUInt());
-            }
-        } else {
-            return *this;
-        }
-    }
-
-    Number Number::operator-() {
-        if (isDouble()) {
-            return -getDouble();
-        } else if (isFloat()) {
-            return -getFloat();
-        } else if (isInteger()) {
-            if (isUInt() && isFixed()) {
-                throw "Status is fixed for unsigned integer value";
-            } else {
-                return -getInt();
-            }
-        } else {
-            return Number((uint8)0, 0);
-        }
-    }
-
     #ifdef KNIIT_LIB_USE_X64
 
     Number::Number(int64 number, bool isFixed) : Number((uint8)(isFixed ? IS_INT64 | IS_FIXED_STATUS : IS_INT64),
@@ -522,11 +517,11 @@ KNIIT_LIB_NAMESPACE {
     }
 
     bool Number::isInt64() const {
-        return isInt() && checkMask(IS_USE_64_BIT);
+        return isInt() && status.checkMask(IS_USE_64_BIT);
     }
 
     bool Number::isUInt64() const {
-        return isUInt() && checkMask(IS_USE_64_BIT);
+        return isUInt() && status.checkMask(IS_USE_64_BIT);
     }
 
     int64 Number::getInt64() const {

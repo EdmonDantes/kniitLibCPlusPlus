@@ -3,6 +3,11 @@ on:
   push:
     paths-ignore:
       - 'gradle.properties'
+      - 'Changelog'
+      - '*.md'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'lldb/*'
 
 jobs:
   build:
