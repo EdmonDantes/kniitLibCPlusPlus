@@ -1,6 +1,8 @@
-//
-// Created by masa_ on 07.03.2021.
-//
+/*
+ *    Copyright (c). 2020. Loginov Ilya Vladislavovich. All rights reserved.
+ *    You must get permission for all action with this code or part of code from email dantes2104@gmail.com.
+ */
+
 #include <vector>
 #include <iostream>
 
@@ -29,7 +31,7 @@ class TestContext {
             try {
                 tests[i](this, &TestContext::setTag);
             } catch (std::exception& e) {
-                std::cerr << "Can not execute function with name '" << currentTag << "' and with id = " << i << "\n\t" << e.what() << '\n';
+                std::cout << "ERROR: Can not execute function with name '" << currentTag << "' and with id = " << i << "\n\t" << e.what() << '\n';
             }
         }
 
@@ -40,6 +42,9 @@ class TestContext {
 #define enableTests() TestContext __testContext;
 #define startTests() __testContext.main();
 
-#define createTest(name) void name(TestContext* _this, TestContext::setTagFunc _setTag)
+#define createTest(name) void name(TestContext* _this, TestContext::setTagFunc _setTag) { callSetTag()
+#define endTest }
 #define callSetTag() (_this->*_setTag)(__func__);
+#define sendMessage std::cout << '\t' <<
+
 #define enableTest(name) __testContext.addTest((name));

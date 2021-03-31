@@ -3,12 +3,18 @@
     {
       "variant_name": "Windows",
       "variant_architecture": "X86",
-      "build_folder_path": "windows/x86"
+      "build_folder_path": "windows/x86",
+      "include": [
+        "README_FOR_IMPORT_VS2019.txt"
+      ]
     },
     {
       "variant_name": "Windows",
       "variant_architecture": "X86-64",
-      "build_folder_path": "windows/x86-64"
+      "build_folder_path": "windows/x86-64",
+      "include": [
+        "README_FOR_IMPORT_VS2019.txt"
+      ]
     },
     {
       "variant_name": "Linux",
@@ -26,8 +32,7 @@
       "build_folder_path": "masOS/x86-64"
     }
   ],
-  "include": [
-    "README_FOR_IMPORT_VS2019.txt",
+  "include" : [
     "README.md"
   ]
 }

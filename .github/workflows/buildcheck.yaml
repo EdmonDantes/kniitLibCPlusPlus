@@ -1,13 +1,8 @@
 name: Build check
 on:
   push:
-    paths-ignore:
-      - 'gradle.properties'
-      - 'Changelog'
-      - '*.md'
-      - 'gradlew'
-      - 'gradlew.bat'
-      - 'lldb/*'
+    branches-ignore:
+      - 'master'
 
 jobs:
   build:

@@ -2,8 +2,10 @@ import lldb
 
 namespace = 'kniit_library'
 
+
 def fullName(shortName):
     return namespace + '::' + shortName
+
 
 def __lldb_init_module(debugger, internal_dict):
     debugger.HandleCommand('command script add -f module.helloWorld hello')
@@ -16,10 +18,12 @@ def __lldb_init_module(debugger, internal_dict):
 def addSummary(debugger, className):
     debugger.HandleCommand('type summary add -F {0}.{1}Summary {2}'.format(__name__, className, fullName(className)))
 
+
 def addSyntheticForClass(debugger, str_class, python_class):
     debugger.HandleCommand('type synthetic add -l {0}.{1} -x {2}'.format(__name__, python_class, fullName(str_class)))
     # for cls in findClasses(debugger, str_class):  # debugger.GetSelectedTarget().FindTypes(str_class):
     #     print("find class '{0}'".format(cls))
+
 
 def normalizeValue(value):
     if value and (value.GetType().IsPointerType() or value.GetType().IsReferenceType()):
@@ -27,21 +31,22 @@ def normalizeValue(value):
     else:
         return value
 
+
 def printFields(value):
     fields = []
     for field in value.GetType().get_fields_array():
         fields.append(field.name)
     print("Fields for class '{0}' = {1}".format(value.GetType(), fields))
 
+
 def findField(_value, fieldName):
-     value = normalizeValue(_value)
-     # print('Find field ' + fieldName)
-     # printFields(value)
-     member = next((x for x in value.GetType().get_fields_array() if x.name == fieldName), None)
-     if member:
+    value = normalizeValue(_value)
+    member = next((x for x in value.GetType().get_fields_array() if x.name == fieldName), None)
+    if member:
         return value.CreateChildAtOffset(fieldName, member.byte_offset, member.type)
-     else:
-         return None
+    else:
+        return None
+
 
 def helloWorld(debugger, command, result, internal_dict):
     print('Hello, world!')
@@ -103,11 +108,21 @@ def getNumberAndTypeFromNumberClass(_value):
     result['fixed'] = isFixed
     return result
 
+
 class ListClassList:
     def __init__(self, _value, internal_dict):
         value = normalizeValue(_value)
-        self.size = findField(value, '_size').GetValueAsUnsigned(0)
-        self.array = findField(value,   'value')
+        self.capacity = value.GetChildMemberWithName("capacity").GetValueAsUnsigned(0)
+        self.maxCapacity = value.target.FindFirstGlobalVariable(value.GetType().name + "::maxNotAllocated").GetValueAsUnsigned(0)
+
+        if self.capacity <= self.maxCapacity:
+            self.size = self.capacity
+            self.array = value.GetChildMemberWithName("valueWithoutSize").GetChildMemberWithName("value")
+        else:
+            tmp = value.GetChildMemberWithName("valueWithSize")
+            self.size = tmp.GetChildMemberWithName("size").GetValueAsUnsigned(0)
+            self.array = tmp.GetChildMemberWithName("value")
+
         if self.array.GetType().IsPointerType():
             self.data_type = self.array.GetType().GetPointeeType()
         else:
@@ -126,6 +141,7 @@ class ListClassList:
             print(e)
             return None
 
+
 # -------------- Summaries --------------------
 
 
@@ -135,6 +151,7 @@ def NumberSummary(value, internal_dict):
         return ('const ' if pair['fixed'] else '') + str(pair['value'])
     else:
         return None
+
 
 def StringSummary(_value, internal_dict):
     result = ""
@@ -147,6 +164,7 @@ def StringSummary(_value, internal_dict):
         return result
     else:
         return None
+
 
 # -------------- Synthetic providers --------------------
 

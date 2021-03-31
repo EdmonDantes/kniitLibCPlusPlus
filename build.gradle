@@ -73,6 +73,11 @@ task prepareArtifactRelease {
 						def includeFile = file(filePath)
 						from includeFile
 					}
+
+					variant.include.each { filePath ->
+                        def includeFile = file(filePath)
+                    	from includeFile
+                    }
 					from buildFolderPath
 					into preZipFolder
 				}
