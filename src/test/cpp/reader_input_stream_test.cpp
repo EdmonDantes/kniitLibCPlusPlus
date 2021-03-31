@@ -1,8 +1,8 @@
-//
-// Created by masa_ on 22.02.2021.
-//
+/*
+ *    Copyright (c). 2020. Loginov Ilya Vladislavovich. All rights reserved.
+ *    You must get permission for all action with this code or part of code from email dantes2104@gmail.com.
+ */
 
-#include <iostream>
 #include "test_context.h"
 #include "core/exception.h"
 
@@ -10,10 +10,9 @@ using KNIIT_LIB_NAMESPACE;
 
 enableTests()
 
-createTest(numberTest) {
-    callSetTag()
-    throw createException2("Test", "test abstract test");
-}
+createTest(numberTest)
+//    throw createException2("Test", "test abstract test");
+endTest
 
 int main() {
     enableTest(numberTest)

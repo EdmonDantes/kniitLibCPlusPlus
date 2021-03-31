@@ -25,17 +25,97 @@ KNIIT_LIB_NAMESPACE {
          * @param b
          * @return a > b ? a : b
          */
-        uintmax max(uintmax a, uintmax b) {
+        constexpr inline static uintmax max(uintmax a, uintmax b) noexcept {
             return a > b ? a : b;
         }
 
-        void move(T& a, T& b) {
+        constexpr inline static uintmax min(uintmax a, uintmax b) noexcept {
+            return a < b ? a : b;
+        }
+
+        inline static void move(T& a, T& b) {
             a = std::move(b);
         }
      protected:
-        T* value = nullptr;
-        uintmax _size = 0;
+
+        struct ValueWithSize {
+            uintmax size = 0;
+            T* value = nullptr;
+        };
+
+     public:
+        static constexpr uint8 maxNotAllocated = sizeof(ValueWithSize) / sizeof(T);
+
+     protected:
+
         uintmax capacity = 0;
+
+        union {
+            ValueWithSize valueWithSize;
+
+            struct ValueWithoutSize {
+                T value[sizeof(ValueWithSize)];
+            } valueWithoutSize;
+        };
+
+        inline T* getPointer() const noexcept {
+            return capacity > maxNotAllocated ? valueWithSize.value : const_cast<T*>(valueWithoutSize.value);
+        }
+
+        inline uintmax getSize() const noexcept {
+            return capacity > maxNotAllocated ? valueWithSize.size : capacity;
+        }
+
+        inline bool isInStack() const noexcept {
+            return capacity <= maxNotAllocated;
+        }
+
+        inline bool isInHeap() const noexcept {
+            return capacity > maxNotAllocated;
+        }
+
+        void initInHeap(uintmax capacity) {
+            this->capacity = capacity;
+            valueWithSize.size = 0;
+            valueWithSize.value = new T[capacity];
+        }
+
+        void initInStack() {
+            capacity = 0;
+        }
+
+        void resizeInStack(uintmax newLength) {
+            if (newLength != getCapacity() && newLength > maxNotAllocated) {
+                T* tmp = new T[newLength];
+                memcpy(tmp, valueWithoutSize.value, capacity * sizeof(T));
+
+                uintmax size = capacity;
+                capacity = newLength;
+
+                valueWithSize.size = size;
+                valueWithSize.value = tmp;
+            }
+        }
+
+        void resizeInHeap(uintmax newLength) {
+            if (newLength == getCapacity()) {
+                return;
+            }
+
+            if (newLength <= maxNotAllocated) {
+                T* tmp = valueWithSize.value;
+                memcpy(valueWithoutSize.value, tmp, newLength * sizeof(T));
+
+                delete[] tmp;
+            } else {
+                T* tmp = new T[newLength];
+                memcpy(tmp, valueWithSize.value, min(valueWithSize.size, newLength) * sizeof(T));
+
+                delete[] valueWithSize.value;
+                valueWithSize.value = tmp;
+                capacity = newLength;
+            }
+        }
 
         /**
          * Init/reinit array for contain values. If reinit delete all values.
@@ -43,14 +123,11 @@ KNIIT_LIB_NAMESPACE {
          * @param capacity - size of array.
          */
         void init(uintmax capacity) {
-            this->_size = 0;
-            this->capacity = capacity;
-
-            if (value != nullptr) {
-                delete[] value;
+            if (capacity > maxNotAllocated) {
+                initInHeap(capacity);
+            } else {
+                initInStack();
             }
-
-            value = new T[capacity];
         }
 
         /**
@@ -61,17 +138,11 @@ KNIIT_LIB_NAMESPACE {
          * @param newSize - new size of array.
          */
         void resize(uintmax newSize) {
-            if (value == nullptr) {
-                value = new T[newSize];
-                return;
+            if (isInStack()) {
+                resizeInStack(newSize);
+            } else {
+                resizeInHeap(newSize);
             }
-
-            T* tmp = new T[newSize];
-            for (uintmax i = 0; i < _size && i < newSize; i++) {
-                move(tmp[i], value[i]);
-            }
-            delete[] value;
-            value = tmp;
         }
 
         /**
@@ -82,11 +153,25 @@ KNIIT_LIB_NAMESPACE {
          * @return Does increase array size on additionalSize.
          */
         bool addSize(uintmax additionalSize) {
-            if (_size + additionalSize > capacity) {
-                resize(capacity = (_size + max((_size * 2 / 3), additionalSize)));
+            if (capacity > maxNotAllocated) {
+                if (valueWithSize.size + additionalSize > capacity) {
+                    resize(valueWithSize.size + max(valueWithSize.size * 2 / 3, additionalSize));
+                }
+
+                valueWithSize.size += additionalSize;
+            } else {
+                this->capacity += additionalSize;
             }
-            _size += additionalSize;
+
             return true;
+        }
+
+        bool removeSize(uintmax subSize) {
+            if (isInStack()) {
+                valueWithSize.size = valueWithSize.size < subSize ? 0 : valueWithSize.size - subSize;
+            } else {
+                capacity = capacity < subSize ? 0 : capacity - subSize;
+            }
         }
 
      public:
@@ -103,21 +188,25 @@ KNIIT_LIB_NAMESPACE {
          * Default constructor.
          * Default array's length = 16
          */
-        List() : List(16) {
-        };
+        List() : List(16) {};
 
 
         /**
          * Constructor from array
          */
         List(T* array, uintmax length, bool createNew = true) {
-            if (!createNew) {
-                value = array;
-                _size = capacity = length;
+            if (length > maxNotAllocated) {
+                if (!createNew) {
+                    valueWithSize.value = array;
+                    valueWithSize.size = capacity = length;
+                } else {
+                    init(length + (length * 3 / 2));
+                    memcpy(valueWithSize.value, array, length * sizeof(T));
+                    valueWithSize.size = length;
+                }
             } else {
-                init(length + (length * 3 / 2));
-                memcpy(this->value, array, sizeof(*this->value) * length);
-                this->_size = length;
+                memcpy(valueWithoutSize.value, array, length * sizeof(T));
+                capacity = length;
             }
         }
 
@@ -125,8 +214,8 @@ KNIIT_LIB_NAMESPACE {
          * Copy constructor
          */
         List(const List<T>& list) : List(list.size() + (list.size() * 3 / 2)) {
-            memcpy(this->value, list.value, sizeof(*this->value) * list.size());
-            this->_size = list._size;
+            memcpy(this->value, list.getPointer(), sizeof(*this->value) * list.size());
+            setSize(list.getSize(), true);
         }
 
         /**
@@ -141,8 +230,11 @@ KNIIT_LIB_NAMESPACE {
          */
         List<T>& operator=(List<T>&& list) {
             memcpy(this, &list, sizeof(*this));
-            list.value = nullptr;
-            list._size = 0;
+            if (list.isInHeap()) {
+                list.valueWithSize.value = nullptr;
+                list.valueWithSize.size = 0;
+            }
+
             list.capacity = 0;
             return *this;
         }
@@ -151,13 +243,13 @@ KNIIT_LIB_NAMESPACE {
          * Copy operator
          */
         List<T>& operator=(const List<T>& list) {
-            this->init(max(list._size + (list._size * 3 / 2), 16));
+            this->init(max(list.getSize() + (list.getSize() * 3 / 2), 16));
 
-            for (int i = 0; i < list._size; i++) {
-                this->value[i] = list.value[i];
+            for (int i = 0; i < list.getSize(); i++) {
+                getPointer()[i] = list.getPointer()[i];
             }
 
-            this->_size = list._size;
+            setSize(list.getSize(), true);
 
             return *this;
         }
@@ -166,13 +258,13 @@ KNIIT_LIB_NAMESPACE {
          * Destructor.
          */
         ~List() {
-            if (value != nullptr) {
-                delete[] value;
+            if (capacity > maxNotAllocated) {
+                delete[] valueWithSize.value;
+                valueWithSize.value = nullptr;
+                valueWithSize.size = 0;
             }
 
-            this->value = nullptr;
-            this->_size = 0;
-            this->capacity = 0;
+            capacity = 0;
         }
 
         /**
@@ -182,7 +274,7 @@ KNIIT_LIB_NAMESPACE {
          */
         void add(const T& value) {
             if (addSize(1)) {
-                move(this->value[_size - 1], const_cast<T&>(value));
+                move(getPointer()[getSize() - 1], const_cast<T&>(value));
             } else {
                 throw createException2("ArrayList", "Can not add value");
             }
@@ -197,10 +289,10 @@ KNIIT_LIB_NAMESPACE {
             if (index <= size()) {
                 if (addSize(1)) {
                     for (uintmax i = size() - 1; i > index; i--) {
-                        this->value[i] = this->value[i - 1];
+                        getPointer()[i] = getPointer()[i - 1];
                     }
 
-                    move(this->value[index], const_cast<T&>(value));
+                    move(getPointer()[index], const_cast<T&>(value));
                 } else {
                     throw createException2("ArrayList", "Can not add value");
                 }
@@ -216,7 +308,7 @@ KNIIT_LIB_NAMESPACE {
          */
         void set(const T& value, int index) {
             if (index < size()) {
-                move(this->value[index], const_cast<T&>(value));
+                move(getPointer()[index], const_cast<T&>(value));
             } else if (index == size()) {
                 this->add(value);
             } else {
@@ -230,11 +322,11 @@ KNIIT_LIB_NAMESPACE {
          * @param list - list with values
          */
         void addAll(const List<T>& list) {
-            uintmax newSize = max(this->capacity, _size + list._size);
+            uintmax newSize = max(capacity, getSize() + list.getSize());
             resize(newSize);
 
-            for (uintmax i = 0; i < list._size; i++) {
-                add(list.value[i]);
+            for (uintmax i = 0; i < list.getSize(); i++) {
+                add(list.getPointer()[i]);
             }
         }
 
@@ -244,7 +336,7 @@ KNIIT_LIB_NAMESPACE {
          * @param length count values in array
          */
         void addAll(const T* array, uintmax length) {
-            uintmax newSize = max(this->capacity, _size + length);
+            uintmax newSize = max(capacity, getSize() + length);
             resize(newSize);
 
             for (uintmax i = 0; i < length; i++) {
@@ -259,11 +351,11 @@ KNIIT_LIB_NAMESPACE {
          * @return Does remove value from this index. If list doesn't have this index, it will return false.
          */
         bool remove(uintmax index) {
-            if (index < _size) {
-                for (uintmax i = index; i < _size - 1; i++) {
-                    value[index] = value[index + 1];
+            if (index < getSize()) {
+                for (uintmax i = index; i < getSize() - 1; i++) {
+                    getPointer()[index] = getPointer()[index + 1];
                 }
-                _size--;
+                removeSize(1);
                 return true;
             }
             return false;
@@ -277,7 +369,7 @@ KNIIT_LIB_NAMESPACE {
          * @return Does remove all values
          */
         bool clear() {
-            _size = 0;
+            setSize(0, true);
             return true;
         }
 
@@ -287,8 +379,8 @@ KNIIT_LIB_NAMESPACE {
          * @return Does remove unused array's cells in memory
          */
         bool cut() {
-            if (_size < capacity) {
-                resize(_size);
+            if (getSize() < capacity) {
+                resize(getSize());
                 return true;
             }
             return false;
@@ -300,9 +392,9 @@ KNIIT_LIB_NAMESPACE {
          * @return new list with changed direction
          */
         List<T> reverse() const {
-            List<T> result = List<T>(_size);
-            for (uintmax i = 0; i < _size; i++) {
-                result.add(value[_size - i - 1]);
+            List<T> result = List<T>(getSize());
+            for (uintmax i = 0; i < getSize(); i++) {
+                result.add(getPointer()[getSize() - i - 1]);
             }
             return std::move(result);
         }
@@ -314,8 +406,8 @@ KNIIT_LIB_NAMESPACE {
          * @return value
          */
         T& get(uintmax index) {
-            if (index < _size) {
-                return value[index];
+            if (index < getSize()) {
+                return getPointer()[index];
             } else {
                 throw createException2("List", "Wrong index");
             }
@@ -325,7 +417,7 @@ KNIIT_LIB_NAMESPACE {
          * @return count values in list
          */
         uintmax size() const {
-            return _size;
+            return getSize();
         }
 
         /**
@@ -337,8 +429,8 @@ KNIIT_LIB_NAMESPACE {
          */
         template<typename F>
         bool find(const T& value, F func) const {
-            for (int i = 0; i < _size; ++i) {
-                if (func(this->value[i], value)) {
+            for (int i = 0; i < getSize(); ++i) {
+                if (func(getPointer()[i], value)) {
                     return true;
                 }
             }
@@ -352,15 +444,19 @@ KNIIT_LIB_NAMESPACE {
          * @return True, if list was changed size.
          */
         bool setSize(uintmax size, bool removeData = false) {
-            if (size < _size) {
+            if (size < getSize()) {
                 if (removeData) {
-                    _size = size;
+                    if (isInStack()) {
+                        capacity = size;
+                    } else {
+                        valueWithSize.size = size;
+                    }
                     return true;
                 } else {
                     return false;
                 };
             } else {
-                return addSize(_size - size);
+                return addSize(size - getSize());
             }
         }
 
@@ -375,12 +471,12 @@ KNIIT_LIB_NAMESPACE {
          * @return Array, if it possible, else return nullptr
          */
         T* toArray() const {
-            if (this->value == nullptr) {
+            if (getPointer() == nullptr) {
                 return nullptr;
             }
 
-            T* array = new T[size()];
-            memcpy(array, this->value, size() * sizeof(T));
+            T* array = new T[getSize()];
+            memcpy(array, getPointer(), getSize() * sizeof(T));
             return array;
         }
 
@@ -402,8 +498,8 @@ KNIIT_LIB_NAMESPACE {
          * @return value
          */
         const T& operator[](uintmax index) const {
-            if (index < _size) {
-                return value[index];
+            if (index < getSize()) {
+                return getPointer()[index];
             } else {
                 throw createException2("List", "Wrong index");
             }

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.10] - 30.03.2021
+### Added
+- Class `TestContext`
+- - Function for send message to log
+### Changed
+- Class `List`
+- - Change list store for values to union. Now small list will not be allocated memory. Variable `maxNotAllocated` shows how much elements you can save without allocated memory. 
+
 ## [0.3.9] - 2021-03-06
 ### Added
 - Class `Status`
