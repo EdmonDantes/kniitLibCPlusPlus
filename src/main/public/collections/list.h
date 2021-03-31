@@ -50,20 +50,23 @@ KNIIT_LIB_NAMESPACE {
 
         uintmax capacity = 0;
 
-        union {
+        union Store {
             ValueWithSize valueWithSize;
 
             struct ValueWithoutSize {
-                T value[sizeof(ValueWithSize)];
+                T value[max(maxNotAllocated, 1)];
             } valueWithoutSize;
-        };
+
+            Store() {}
+            ~Store() {}
+        } store;
 
         inline T* getPointer() const noexcept {
-            return capacity > maxNotAllocated ? valueWithSize.value : const_cast<T*>(valueWithoutSize.value);
+            return capacity > maxNotAllocated ? store.valueWithSize.value : const_cast<T*>(store.valueWithoutSize.value);
         }
 
         inline uintmax getSize() const noexcept {
-            return capacity > maxNotAllocated ? valueWithSize.size : capacity;
+            return capacity > maxNotAllocated ? store.valueWithSize.size : capacity;
         }
 
         inline bool isInStack() const noexcept {
@@ -76,8 +79,8 @@ KNIIT_LIB_NAMESPACE {
 
         void initInHeap(uintmax capacity) {
             this->capacity = capacity;
-            valueWithSize.size = 0;
-            valueWithSize.value = new T[capacity];
+            store.valueWithSize.size = 0;
+            store.valueWithSize.value = new T[capacity];
         }
 
         void initInStack() {
@@ -87,13 +90,13 @@ KNIIT_LIB_NAMESPACE {
         void resizeInStack(uintmax newLength) {
             if (newLength != getCapacity() && newLength > maxNotAllocated) {
                 T* tmp = new T[newLength];
-                memcpy(tmp, valueWithoutSize.value, capacity * sizeof(T));
+                memcpy(tmp, store.valueWithoutSize.value, capacity * sizeof(T));
 
                 uintmax size = capacity;
                 capacity = newLength;
 
-                valueWithSize.size = size;
-                valueWithSize.value = tmp;
+                store.valueWithSize.size = size;
+                store.valueWithSize.value = tmp;
             }
         }
 
@@ -103,16 +106,16 @@ KNIIT_LIB_NAMESPACE {
             }
 
             if (newLength <= maxNotAllocated) {
-                T* tmp = valueWithSize.value;
-                memcpy(valueWithoutSize.value, tmp, newLength * sizeof(T));
+                T* tmp = store.valueWithSize.value;
+                memcpy(store.valueWithoutSize.value, tmp, newLength * sizeof(T));
 
                 delete[] tmp;
             } else {
                 T* tmp = new T[newLength];
-                memcpy(tmp, valueWithSize.value, min(valueWithSize.size, newLength) * sizeof(T));
+                memcpy(tmp, store.valueWithSize.value, min(store.valueWithSize.size, newLength) * sizeof(T));
 
-                delete[] valueWithSize.value;
-                valueWithSize.value = tmp;
+                delete[] store.valueWithSize.value;
+                store.valueWithSize.value = tmp;
                 capacity = newLength;
             }
         }
@@ -154,11 +157,11 @@ KNIIT_LIB_NAMESPACE {
          */
         bool addSize(uintmax additionalSize) {
             if (capacity > maxNotAllocated) {
-                if (valueWithSize.size + additionalSize > capacity) {
-                    resize(valueWithSize.size + max(valueWithSize.size * 2 / 3, additionalSize));
+                if (store.valueWithSize.size + additionalSize > capacity) {
+                    resize(store.valueWithSize.size + max(store.valueWithSize.size * 2 / 3, additionalSize));
                 }
 
-                valueWithSize.size += additionalSize;
+                store.valueWithSize.size += additionalSize;
             } else {
                 this->capacity += additionalSize;
             }
@@ -168,7 +171,7 @@ KNIIT_LIB_NAMESPACE {
 
         bool removeSize(uintmax subSize) {
             if (isInStack()) {
-                valueWithSize.size = valueWithSize.size < subSize ? 0 : valueWithSize.size - subSize;
+                store.valueWithSize.size = store.valueWithSize.size < subSize ? 0 : store.valueWithSize.size - subSize;
             } else {
                 capacity = capacity < subSize ? 0 : capacity - subSize;
             }
@@ -197,15 +200,15 @@ KNIIT_LIB_NAMESPACE {
         List(T* array, uintmax length, bool createNew = true) {
             if (length > maxNotAllocated) {
                 if (!createNew) {
-                    valueWithSize.value = array;
-                    valueWithSize.size = capacity = length;
+                    store.valueWithSize.value = array;
+                    store.valueWithSize.size = capacity = length;
                 } else {
                     init(length + (length * 3 / 2));
-                    memcpy(valueWithSize.value, array, length * sizeof(T));
-                    valueWithSize.size = length;
+                    memcpy(store.valueWithSize.value, array, length * sizeof(T));
+                    store.valueWithSize.size = length;
                 }
             } else {
-                memcpy(valueWithoutSize.value, array, length * sizeof(T));
+                memcpy(store.valueWithoutSize.value, array, length * sizeof(T));
                 capacity = length;
             }
         }
@@ -231,8 +234,8 @@ KNIIT_LIB_NAMESPACE {
         List<T>& operator=(List<T>&& list) {
             memcpy(this, &list, sizeof(*this));
             if (list.isInHeap()) {
-                list.valueWithSize.value = nullptr;
-                list.valueWithSize.size = 0;
+                list.store.valueWithSize.value = nullptr;
+                list.store.valueWithSize.size = 0;
             }
 
             list.capacity = 0;
@@ -259,9 +262,9 @@ KNIIT_LIB_NAMESPACE {
          */
         ~List() {
             if (capacity > maxNotAllocated) {
-                delete[] valueWithSize.value;
-                valueWithSize.value = nullptr;
-                valueWithSize.size = 0;
+                delete[] store.valueWithSize.value;
+                store.valueWithSize.value = nullptr;
+                store.valueWithSize.size = 0;
             }
 
             capacity = 0;
@@ -449,7 +452,7 @@ KNIIT_LIB_NAMESPACE {
                     if (isInStack()) {
                         capacity = size;
                     } else {
-                        valueWithSize.size = size;
+                        store.valueWithSize.size = size;
                     }
                     return true;
                 } else {
